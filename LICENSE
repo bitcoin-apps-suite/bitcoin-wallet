@@ -1,0 +1,36 @@
+Open BSV License
+
+Copyright (c) 2024 Bitcoin Apps Suite
+Copyright (c) 2024 Yours.org (original work)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+1. The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+2. The Software, and any software that is derived from the Software or parts thereof,
+   can only be used on the Bitcoin SV (BSV) blockchain. The Bitcoin SV blockchain is
+   defined as the blockchain that maintains the original Bitcoin protocol as defined in
+   the Bitcoin whitepaper by Satoshi Nakamoto, and has a majority of hash rate supporting
+   blocks that are greater than 1MB in size.
+
+3. The Software, and any software that is derived from the Software or parts thereof,
+   cannot be used on any blockchain that is a fork of Bitcoin SV, or any blockchain
+   that is not Bitcoin SV.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Attribution Notice:
+This project is based on the Yours Wallet by Yours.org
+Original repository: https://github.com/yours-org/yours-wallet

@@ -12,6 +12,10 @@ export const useSocialProfile = (chromeStorageService: ChromeStorageService) => 
 
   useEffect(() => {
     const getSocialProfile = async (): Promise<SocialProfile> => {
+      if (!chromeStorageService) {
+        // Return default profile when running outside extension environment
+        return socialProfile;
+      }
       const { account } = chromeStorageService.getCurrentAccountObject();
       const profile = account?.settings?.socialProfile;
       if (!profile) return socialProfile;
@@ -24,6 +28,11 @@ export const useSocialProfile = (chromeStorageService: ChromeStorageService) => 
   }, []);
 
   const storeSocialProfile = async (profile: SocialProfile) => {
+    if (!chromeStorageService) {
+      // Just update state when running outside extension environment
+      setSocialProfile(profile);
+      return;
+    }
     const { account } = chromeStorageService.getCurrentAccountObject();
     if (!account) throw new Error('No account found');
     const accountSettings = account.settings;

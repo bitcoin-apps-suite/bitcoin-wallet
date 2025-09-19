@@ -1,68 +1,253 @@
-## Contributing to Yours Wallet
+# Contributing to Bitcoin Wallet
 
-Thank you for your interest in contributing to Yours Wallet! Your contributions are what move the project forward. Please follow these steps to set up your development environment and ensure that your code adheres to our formatting standards.
+Thank you for your interest in contributing to Bitcoin Wallet! We welcome contributions from the community and are grateful for any help you can provide.
+
+## Table of Contents
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [How to Contribute](#how-to-contribute)
+- [Development Setup](#development-setup)
+- [Pull Request Process](#pull-request-process)
+- [Coding Standards](#coding-standards)
+- [Testing](#testing)
+- [Documentation](#documentation)
+- [Community](#community)
+
+## Code of Conduct
+
+By participating in this project, you agree to abide by our Code of Conduct:
+
+- Be respectful and inclusive
+- Welcome newcomers and help them get started
+- Focus on constructive criticism
+- Accept feedback gracefully
+- Prioritize the project's best interests
 
 ## Getting Started
 
-1. **Fork the Repository:** Click the "Fork" button at the top right of this repository on GitHub to create a copy of the repository under your own GitHub account.
+1. **Fork the repository**: Click the "Fork" button on the [Bitcoin Wallet repository](https://github.com/bitcoin-apps-suite/bitcoin-wallet)
+2. **Clone your fork**:
+   ```bash
+   git clone https://github.com/your-username/bitcoin-wallet.git
+   cd bitcoin-wallet
+   ```
+3. **Add upstream remote**:
+   ```bash
+   git remote add upstream https://github.com/bitcoin-apps-suite/bitcoin-wallet.git
+   ```
 
-2. **Clone Your Fork:** Clone the repository from your GitHub account to your local machine.
+## How to Contribute
 
+### Reporting Bugs
+
+Before reporting a bug, please:
+1. Check the [existing issues](https://github.com/bitcoin-apps-suite/bitcoin-wallet/issues) to avoid duplicates
+2. Use the bug report template
+3. Include:
+   - Clear description of the issue
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Screenshots if applicable
+   - System information (OS, browser, node version)
+
+### Suggesting Features
+
+1. Check if the feature has already been suggested
+2. Use the feature request template
+3. Explain:
+   - The problem your feature solves
+   - How you envision it working
+   - Any alternative solutions you've considered
+
+### Code Contributions
+
+Areas where we especially welcome contributions:
+- **File Type Asset Handlers**: New file type implementations
+- **3D Visualization**: Improvements to the bubble interface
+- **Exchange Features**: Trading and marketplace functionality
+- **Security Enhancements**: Wallet security improvements
+- **Performance Optimization**: Speed and efficiency improvements
+- **Documentation**: Tutorials, guides, and API docs
+- **Testing**: Unit tests, integration tests, and E2E tests
+- **Internationalization**: Translations and locale support
+
+## Development Setup
+
+### Prerequisites
+- Node.js 16+ and npm
+- Git
+- Chrome browser (for extension testing)
+
+### Installation
 ```bash
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
-```
-
-3. **Install Dependencies:** Install the projects dependencies using npm.
-
-```bash
+# Install dependencies
 npm install
-```
 
-4. **Setup Husky Hooks:** Run the setup script to enable Husky hooks and configure pre-commit hooks for code formatting. This script will also make the pre-commit hook executable.
+# Start development server
+npm start
 
-```bash
-./setup.sh
-```
+# Run tests
+npm test
 
-5. **Create a Branch:** Create a new branch for your work. Please ensure that your branch includes the issue number and a description like so:
-
-```bash
-git checkout -b feat/75-add-new-card-component
-```
-
-6. **Build the App:** Save your changes then create a production build of the app to ensure it compiles correctly.
-
-```bash
+# Build for production
 npm run build
 ```
 
-7. **Run The Extension:** Load the extension into your browser using dev mode and ensure your changes look good in the chrome environment:
-
-   - Navigate to `chrome://extensions` and turn on dev mode.
-   - Click "Load Unpacked".
-   - Upload the production `build` folder that was just created.
-   - Launch the extension and ensure your changes look good.
-
-8. **Commit Your Changes:** Assuming everything above checks out, commit your changes. Husky will automatically run Prettier to format your code, ensuring it meets our formatting standards.
-
-```bash
-git add .
-git commit -m "Your descriptive commit message"
+### Environment Setup
+Create a `.env` file in the project root:
+```env
+PORT=1050
+REACT_APP_NETWORK=mainnet
+REACT_APP_EXCHANGE_URL=https://exchange.bitcoin-wallet.app
 ```
 
-9. **Push Changes:** Push the branch to your GitHub fork.
+## Pull Request Process
 
-```bash
-git push origin my-feature
+1. **Create a feature branch**:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make your changes**:
+   - Write clean, readable code
+   - Follow the coding standards
+   - Add/update tests as needed
+   - Update documentation
+
+3. **Commit your changes**:
+   ```bash
+   git add .
+   git commit -m "feat: add amazing feature"
+   ```
+   
+   Commit message format:
+   - `feat:` New feature
+   - `fix:` Bug fix
+   - `docs:` Documentation changes
+   - `style:` Code style changes (formatting, etc.)
+   - `refactor:` Code refactoring
+   - `test:` Test additions or changes
+   - `chore:` Maintenance tasks
+
+4. **Push to your fork**:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+5. **Create a Pull Request**:
+   - Go to your fork on GitHub
+   - Click "New Pull Request"
+   - Select your feature branch
+   - Fill out the PR template
+   - Link any related issues
+
+6. **PR Review Process**:
+   - Maintainers will review your PR
+   - Address any feedback
+   - Once approved, your PR will be merged
+
+## Coding Standards
+
+### TypeScript/JavaScript
+- Use TypeScript for new code
+- Follow ESLint rules
+- Use meaningful variable and function names
+- Add JSDoc comments for public APIs
+- Prefer functional components for React
+
+### Styling
+- Use styled-components for new components
+- Follow the existing theme structure
+- Ensure responsive design
+- Test on multiple screen sizes
+
+### File Structure
+```
+src/
+├── components/     # Reusable UI components
+├── pages/         # Page components
+├── services/      # Business logic
+├── hooks/         # Custom React hooks
+├── utils/         # Utility functions
+├── types/         # TypeScript type definitions
+└── assets/        # Images, icons, etc.
 ```
 
-10. **Create a Pull Request:**: Navigate to your forked repository on GitHub, and you should see an option to create a pull request and merge into `Yours-Wallet:main`. Click it, fill out the pull request template, and submit your changes for review.
+## Testing
 
-11. **Code Review:** Your changes will be reviewed, and you may be asked to make further adjustments. Once the changes are approved, they will be merged into the main project.
+### Running Tests
+```bash
+# Run all tests
+npm test
 
-12. **Celebrate:** 🎉 Congratulations, you've contributed to Yours Wallet!
+# Run tests with coverage
+npm test -- --coverage
 
-**\*If you plan to contribute, please review the PR Guidelines**
+# Run tests in watch mode
+npm test -- --watch
+```
 
-[PR Guidelines](PR_GUIDELINES.md)
+### Writing Tests
+- Write unit tests for utilities and services
+- Write integration tests for components
+- Test edge cases and error scenarios
+- Aim for >80% code coverage
+
+Example test:
+```typescript
+describe('BubbleVisualization', () => {
+  it('should render bubbles for each UTXO', () => {
+    const utxos = [/* test data */];
+    const { container } = render(
+      <BubbleVisualization utxos={utxos} />
+    );
+    expect(container.querySelectorAll('.bubble')).toHaveLength(utxos.length);
+  });
+});
+```
+
+## Documentation
+
+### Code Documentation
+- Add JSDoc comments for functions
+- Document complex algorithms
+- Include usage examples
+
+### README Updates
+- Update README for new features
+- Keep installation instructions current
+- Update screenshots if UI changes
+
+### API Documentation
+- Document new endpoints
+- Include request/response examples
+- Update postman collections
+
+## Community
+
+### Communication Channels
+- **GitHub Issues**: Bug reports and feature requests
+- **Discord**: Real-time discussions (coming soon)
+- **Twitter**: Updates and announcements (coming soon)
+
+### Getting Help
+- Check the [Developer Documentation](DEVELOPERS.md)
+- Search existing issues and discussions
+- Ask in Discord (coming soon)
+- Tag `@maintainers` for urgent issues
+
+## Recognition
+
+Contributors will be:
+- Listed in the Contributors section
+- Mentioned in release notes
+- Eligible for contributor badges
+- Invited to contributor meetings
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the Open BSV License.
+
+---
+
+Thank you for contributing to Bitcoin Wallet! 🚀

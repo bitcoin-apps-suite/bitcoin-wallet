@@ -6,13 +6,37 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="theme-color" content="#1B6B93" />
-    <meta name="description" content="A non-custodial and open source wallet for BSV and 1Sat Ordinals." />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <meta name="description" content="Bitcoin Wallet - A full-featured Bitcoin BSV wallet with HandCash integration for BSV and 1Sat Ordinals." />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://bitcoin-wallet.vercel.app/" />
+    <meta property="og:title" content="Bitcoin Wallet" />
+    <meta property="og:description" content="Bitcoin Wallet - A full-featured Bitcoin BSV wallet with HandCash integration for BSV and 1Sat Ordinals." />
+    <meta property="og:image" content="%PUBLIC_URL%/bitcoin-wallet-logo.png" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://bitcoin-wallet.vercel.app/" />
+    <meta property="twitter:title" content="Bitcoin Wallet" />
+    <meta property="twitter:description" content="Bitcoin Wallet - A full-featured Bitcoin BSV wallet with HandCash integration for BSV and 1Sat Ordinals." />
+    <meta property="twitter:image" content="%PUBLIC_URL%/bitcoin-wallet-logo.png" />
+    
+    <!-- Discord / WhatsApp / Other Social Media -->
+    <meta property="og:site_name" content="Bitcoin Wallet" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/bitcoin-wallet-logo.png" />
     <link rel="manifest" href="%PUBLIC_URL%/pwa-manifest.json" />
-    <title>Yours Wallet</title>
+
+    <!-- Preconnect to Bitcoin network for better performance -->
+    <link rel="preconnect" href="https://api.whatsonchain.com" />
+    
+    <title>Bitcoin Wallet</title>
   </head>
-  <body>
+  <body style="margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;">
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root" style="width: 100%; height: 100%; margin: 0; padding: 0;"></div>
   </body>
 </html>

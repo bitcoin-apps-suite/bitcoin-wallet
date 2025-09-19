@@ -383,6 +383,12 @@ export class BsvService {
   };
 
   updateBsvBalance = async () => {
+    const { account } = this.chromeStorageService.getCurrentAccountObject();
+    if (!account || !this.keysService.identityAddress) {
+      console.warn('No account or identity address found, skipping balance update');
+      return;
+    }
+    
     const utxos = await this.fundingTxos();
     const total = utxos.reduce((a, item) => a + Number(item.satoshis), 0);
     this.bsvBalance = (total ?? 0) / BSV_DECIMAL_CONVERSION;
@@ -391,8 +397,6 @@ export class BsvService {
       satoshis: total,
       usdInCents: Math.round(this.bsvBalance * this.exchangeRate * 100),
     };
-    const { account } = this.chromeStorageService.getCurrentAccountObject();
-    if (!account) throw Error('No account found!');
     const key: keyof ChromeStorageObject = 'accounts';
     const update: Partial<ChromeStorageObject['accounts']> = {
       [this.keysService.identityAddress]: {

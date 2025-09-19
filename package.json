@@ -1,12 +1,16 @@
 {
-  "name": "yours-wallet",
-  "version": "4.5.0",
+  "name": "bitcoin-wallet",
+  "version": "1.0.0",
+  "description": "Bitcoin Wallet - A full-featured Bitcoin BSV wallet with real-world currencies and file type assets",
   "private": true,
   "dependencies": {
     "@bsv/paymail": "^2.0.2",
     "@bsv/sdk": "^1.4.24",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "@handcash/handcash-connect": "^0.8.11",
     "@ramonak/react-progress-bar": "^5.2.0",
+    "@react-three/drei": "^9.88.0",
+    "@react-three/fiber": "^8.15.0",
     "@tempfix/idb": "^8.0.3",
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.1",
@@ -16,6 +20,7 @@
     "@types/node": "^22.7.4",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.2.7",
+    "@types/three": "^0.160.0",
     "assert": "^2.1.0",
     "axios": "^1.5.1",
     "bitcoin-address-validation": "^2.2.3",
@@ -43,6 +48,7 @@
     "spv-store": "^0.1.86",
     "stream-browserify": "^3.0.0",
     "styled-components": "^6.0.8",
+    "three": "^0.160.0",
     "ts-loader": "^9.5.1",
     "typescript": "^4.9.5",
     "url": "^0.11.3",
@@ -50,7 +56,7 @@
     "yours-wallet-provider": "^3.7.0"
   },
   "scripts": {
-    "start": "react-app-rewired start",
+    "start": "PORT=1050 react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject",

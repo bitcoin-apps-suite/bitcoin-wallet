@@ -2,6 +2,7 @@
 declare const chrome: any;
 
 import { Utils } from '@bsv/sdk';
+import { storageAdapter } from '../utils/storageAdapter';
 import { NetWork } from 'yours-wallet-provider';
 import { YoursEventName } from '../inject';
 import { sendMessage } from '../utils/chromeHelpers';
@@ -20,31 +21,36 @@ export class ChromeStorageService {
   storage: Partial<ChromeStorageObject> | undefined;
 
   private set = async (obj: Partial<ChromeStorageObject>): Promise<void> => {
-    return new Promise<void>((resolve, reject) => {
-      chrome.storage.local.set(obj, async () => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
-        } else {
-          await this.getAndSetStorage();
-          resolve();
-        }
-      });
-    });
+    try {
+      await storageAdapter.set(obj);
+      await this.getAndSetStorage();
+    } catch (error) {
+      console.error('Storage set error:', error);
+      throw error;
+    }
   };
 
   private get = async (keyOrKeys: string | string[] | null): Promise<Partial<ChromeStorageObject>> => {
-    return new Promise<Partial<ChromeStorageObject>>((resolve, reject) => {
-      chrome.storage.local.get(keyOrKeys, (result: Partial<ChromeStorageObject>) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
-        } else {
-          resolve(result);
-        }
-      });
-    });
+    try {
+      const result = await storageAdapter.get(keyOrKeys);
+      return result as Partial<ChromeStorageObject>;
+    } catch (error) {
+      console.error('Storage get error:', error);
+      return {};
+    }
   };
 
   remove = async (keyOrKeys: string | string[]): Promise<void> => {
+    try {
+      await storageAdapter.remove(keyOrKeys);
+      await this.getAndSetStorage();
+    } catch (error) {
+      console.error('Storage remove error:', error);
+      throw error;
+    }
+  };
+
+  private _oldRemove = async (keyOrKeys: string | string[]): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
       chrome.storage.local.remove(keyOrKeys, () => {
         if (chrome.runtime.lastError) {

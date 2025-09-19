@@ -9,11 +9,13 @@ import {
   YoursEventName,
 } from './inject';
 
-console.log('🌱 Yours Wallet Loaded');
+// Only run in extension environment
+if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
+  console.log('🌱 Yours Wallet Loaded');
 
-const script = document.createElement('script');
-script.src = chrome.runtime.getURL('inject.js');
-(document.head || document.documentElement).appendChild(script);
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('inject.js');
+  (document.head || document.documentElement).appendChild(script);
 
 self.addEventListener(CustomListenerName.YOURS_REQUEST, (e: Event) => {
   const { type, messageId, params: originalParams = {} } = (e as CustomEvent<RequestEventDetail>).detail;
@@ -41,7 +43,7 @@ self.addEventListener(CustomListenerName.YOURS_REQUEST, (e: Event) => {
 
   params.domain = window.location.hostname;
 
-  chrome.runtime.sendMessage({ action: type, params }, buildResponseCallback(messageId));
+    chrome.runtime.sendMessage({ action: type, params }, buildResponseCallback(messageId));
 });
 
 const buildResponseCallback = (messageId: string) => {
@@ -51,10 +53,11 @@ const buildResponseCallback = (messageId: string) => {
   };
 };
 
-chrome.runtime.onMessage.addListener((message: EmitEventDetail) => {
+  chrome.runtime.onMessage.addListener((message: EmitEventDetail) => {
   const { type, action, params } = message;
   if (type === CustomListenerName.YOURS_EMIT_EVENT) {
     const event = new CustomEvent(type, { detail: { action, params } });
     self.dispatchEvent(event);
   }
-});
+  });
+}

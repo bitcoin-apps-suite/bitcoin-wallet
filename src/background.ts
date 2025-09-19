@@ -45,6 +45,9 @@ import { TxoLookup, TxoSort } from 'spv-store';
 import { initOneSatSPV } from './initSPVStore';
 import { CHROME_STORAGE_OBJECT_VERSION, HOSTED_YOURS_IMAGE } from './utils/constants';
 import { convertLockReqToSendBsvReq } from './utils/tools';
+// Check if we're in extension environment
+const isExtensionEnv = typeof chrome !== 'undefined' && chrome.runtime && chrome.storage;
+
 let chromeStorageService = new ChromeStorageService();
 const isInServiceWorker = self?.document === undefined;
 const gorillaPoolService = new GorillaPoolService(chromeStorageService);
@@ -147,9 +150,10 @@ if (isInServiceWorker) {
   };
 
   const launchPopUp = () => {
-    chrome.windows.create(
-      {
-        url: chrome.runtime.getURL('index.html'),
+    if (isExtensionEnv && chrome.windows) {
+      chrome.windows.create(
+        {
+          url: chrome.runtime.getURL('index.html'),
         type: 'popup',
         width: 392,
         height: 567,
@@ -162,7 +166,8 @@ if (isInServiceWorker) {
           });
         }
       },
-    );
+      );
+    }
   };
 
   const verifyAccess = async (requestingDomain: string): Promise<boolean> => {
@@ -189,7 +194,8 @@ if (isInServiceWorker) {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  chrome.runtime.onMessage.addListener((message: any, sender, sendResponse: CallbackResponse) => {
+  if (isExtensionEnv) {
+    chrome.runtime.onMessage.addListener((message: any, sender, sendResponse: CallbackResponse) => {
     if ([YoursEventName.SIGNED_OUT, YoursEventName.SWITCH_ACCOUNT].includes(message.action)) {
       emitEventToActiveTabs(message);
     }
@@ -330,13 +336,15 @@ if (isInServiceWorker) {
 
   const emitEventToActiveTabs = (message: { action: YoursEventName; params: RequestParams }) => {
     const { action, params } = message;
-    chrome.tabs.query({}, function (tabs) {
-      tabs.forEach(function (tab: chrome.tabs.Tab) {
+    if (isExtensionEnv && chrome.tabs) {
+      chrome.tabs.query({}, function (tabs) {
+        tabs.forEach(function (tab: chrome.tabs.Tab) {
         if (tab.id) {
           chrome.tabs.sendMessage(tab.id, { type: CustomListenerName.YOURS_EMIT_EVENT, action, params });
         }
+        });
       });
-    });
+    }
     return true;
   };
 
@@ -1349,9 +1357,11 @@ if (isInServiceWorker) {
 
     return true;
   };
+  }
 
   // HANDLE WINDOW CLOSE *****************************************
-  chrome.windows.onRemoved.addListener((closedWindowId) => {
+  if (isExtensionEnv && chrome.windows) {
+    chrome.windows.onRemoved.addListener((closedWindowId) => {
     console.log('Window closed: ', closedWindowId);
     localStorage.removeItem('walletImporting');
 
@@ -1479,5 +1489,6 @@ if (isInServiceWorker) {
       popupWindowId = undefined;
       chromeStorageService.remove('popupWindowId');
     }
-  });
+    });
+  }
 }

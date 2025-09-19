@@ -59,11 +59,22 @@ export const Start = () => {
     <Show when={showStart}>
       <Content>
         <YoursIcon width="4rem" />
-        <TitleText theme={theme}>{`${theme.settings.walletName} Wallet`}</TitleText>
+        <TitleText theme={theme}>Bitcoin Wallet</TitleText>
         <Text theme={theme} style={{ margin: '0.25rem 0 1rem 0' }}>
           An open source project.
         </Text>
         <Button theme={theme} type="primary" label="Create New Wallet" onClick={() => navigate('/create-wallet')} />
+        <Button
+          theme={theme}
+          type="secondary-outline"
+          label="Sign in with HandCash"
+          onClick={() => navigate('/handcash-signin')}
+          style={{ 
+            background: 'linear-gradient(135deg, #00D54B 0%, #00AB3A 100%)',
+            color: 'white',
+            border: 'none'
+          }}
+        />
         <Button
           theme={theme}
           type="secondary-outline"

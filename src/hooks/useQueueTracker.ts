@@ -92,10 +92,14 @@ export const useQueueTracker = () => {
     };
 
     // Listen for messages from the background script
-    chrome.runtime.onMessage.addListener(handleQueueStatusUpdate);
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+      chrome.runtime.onMessage.addListener(handleQueueStatusUpdate);
+    }
 
     return () => {
-      chrome.runtime.onMessage.removeListener(handleQueueStatusUpdate);
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+        chrome.runtime.onMessage.removeListener(handleQueueStatusUpdate);
+      }
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }

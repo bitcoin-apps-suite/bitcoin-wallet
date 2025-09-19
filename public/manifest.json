@@ -1,12 +1,12 @@
 {
-  "version": "4.5.0",
+  "version": "1.0.0",
   "manifest_version": 3,
-  "name": "Yours Wallet",
-  "description": "A non-custodial and open-source wallet for BSV and 1Sat Ordinals",
+  "name": "Bitcoin Wallet",
+  "description": "A Bitcoin Apps (bapps) wallet with HandCash integration for BSV and 1Sat Ordinals",
   "permissions": ["storage", "unlimitedStorage", "tabs", "notifications"],
   "action": {
     "default_popup": "index.html",
-    "default_title": "Yours Wallet"
+    "default_title": "Bitcoin Wallet"
   },
   "background": {
     "service_worker": "background.js",

@@ -25,7 +25,56 @@ yarn-error.log*
 # cache
 .cache
 
-#custom script
+# custom scripts
 .panda-build.sh
 .panda-release.sh
+create-port-killer-app.sh
+Kill-Port-*.applescript
+
+# deployment
 .vercel
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# environment files
+.env
+.env.*
+
+# private keys and sensitive data
+*.key
+*.pem
+*.p12
+*.pfx
+private/
+secrets/
+
+# temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.log
+
+# build artifacts
+dist/
+out/
+
+# test coverage
+coverage/
+*.lcov
+
+# package manager
+.yarn/
+.pnpm-store/
+
+# generated icons
+bitcoin-wallet-icon.iconset/

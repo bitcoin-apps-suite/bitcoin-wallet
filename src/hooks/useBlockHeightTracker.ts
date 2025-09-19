@@ -23,7 +23,13 @@ export const useBlockHeightTracker = () => {
     };
 
     // Listen for messages from the background script
-    chrome.runtime.onMessage.addListener(handleBlockHeightUpdate);
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+      chrome.runtime.onMessage.addListener(handleBlockHeightUpdate);
+      
+      return () => {
+        chrome.runtime.onMessage.removeListener(handleBlockHeightUpdate);
+      };
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
