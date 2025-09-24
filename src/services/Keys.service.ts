@@ -213,14 +213,31 @@ export class KeysService {
   retrieveKeys = async (password?: string, isBelowNoApprovalLimit?: boolean): Promise<Keys | Partial<Keys>> => {
     const accountObj = this.chromeStorageService.getCurrentAccountObject();
     const { account, passKey } = accountObj;
-    if (!account) throw new Error('No account found!');
-    if (!account.network) throw new Error('No network found!');
+    
+    if (!account) {
+      throw new Error('No account found! Please create or import an account first.');
+    }
+    
+    if (!account.network) {
+      throw new Error('No network configuration found! Account may be corrupted.');
+    }
+    
     const { encryptedKeys } = account;
     const { isPasswordRequired } = account.settings;
+    
     try {
-      if (!encryptedKeys || !passKey) throw new Error('No keys found!');
+      if (!encryptedKeys || !passKey) {
+        throw new Error('No encrypted keys found! Account may be corrupted.');
+      }
+      
       const d = decrypt(encryptedKeys, passKey);
-      const keys: Keys = JSON.parse(d);
+      let keys: Keys;
+      
+      try {
+        keys = JSON.parse(d);
+      } catch (parseError) {
+        throw new Error('Failed to parse decrypted keys. Account data may be corrupted.');
+      }
 
       const walletAddr = Utils.toBase58Check(Utils.fromBase58Check(keys.walletAddress).data as number[], [
         account.network === NetWork.Mainnet ? MAINNET_ADDRESS_PREFIX : TESTNET_ADDRESS_PREFIX,
@@ -263,7 +280,12 @@ export class KeysService {
       }
     } catch (error) {
       console.error('Error in retrieveKeys:', error);
-      throw new Error('Failed to retrieve keys');
+      
+      if (error instanceof Error) {
+        throw error;
+      }
+      
+      throw new Error(`Failed to retrieve keys: ${String(error)}`);
     }
   };
 
@@ -282,12 +304,29 @@ export class KeysService {
   verifyPassword = async (password: string): Promise<boolean> => {
     const isRequired = this.chromeStorageService.isPasswordRequired();
     if (!isRequired) return true;
+    
+    if (!password) {
+      console.warn('Password verification attempted with empty password');
+      return false;
+    }
+    
     const { salt, passKey } = this.chromeStorageService.getCurrentAccountObject();
-    if (!salt || !passKey) return false;
+    if (!salt || !passKey) {
+      console.error('Missing salt or passKey for password verification');
+      return false;
+    }
+    
     try {
       const derivedKey = deriveKey(password, salt);
-      return derivedKey === passKey;
+      const isValid = derivedKey === passKey;
+      
+      if (!isValid) {
+        console.warn('Password verification failed: incorrect password');
+      }
+      
+      return isValid;
     } catch (error) {
+      console.error('Password verification error:', error);
       return false;
     }
   };

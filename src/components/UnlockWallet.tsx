@@ -11,6 +11,7 @@ import { useServiceContext } from '../hooks/useServiceContext';
 import { YoursIcon } from './YoursIcon';
 import { setDerivationTags } from '../services/serviceHelpers';
 import { Keys } from '../utils/keys';
+import { useSnackbar } from '../hooks/useSnackbar';
 
 const Container = styled.div<WhiteLabelTheme & { $isMobile: boolean }>`
   display: flex;
@@ -33,32 +34,60 @@ export type UnlockWalletProps = {
 export const UnlockWallet = (props: UnlockWalletProps) => {
   const { onUnlock } = props;
   const { theme } = useTheme();
+  const { addSnackbar } = useSnackbar();
   const [password, setPassword] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [verificationFailed, setVerificationFailed] = useState(false);
+  const [attemptCount, setAttemptCount] = useState(0);
   const { isMobile } = useViewport();
   const { keysService, chromeStorageService, oneSatSPV } = useServiceContext();
 
   const handleUnlock = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isProcessing) return;
+    
+    if (!password.trim()) {
+      addSnackbar('Please enter your password', 'error');
+      return;
+    }
+    
     setIsProcessing(true);
     await sleep(25);
 
-    const isVerified = await keysService.verifyPassword(password);
-    if (isVerified) {
-      setVerificationFailed(false);
-      const timestamp = Date.now();
-      await chromeStorageService.update({ lastActiveTime: timestamp });
-      const keys = (await keysService.retrieveKeys(password)) as Keys;
-      await setDerivationTags(keys, oneSatSPV, chromeStorageService);
-      onUnlock();
-    } else {
-      setVerificationFailed(true);
-      setTimeout(() => {
+    try {
+      const isVerified = await keysService.verifyPassword(password);
+      if (isVerified) {
         setVerificationFailed(false);
-        setIsProcessing(false);
-      }, 900);
+        setAttemptCount(0);
+        
+        const timestamp = Date.now();
+        await chromeStorageService.update({ lastActiveTime: timestamp });
+        
+        const keys = (await keysService.retrieveKeys(password)) as Keys;
+        await setDerivationTags(keys, oneSatSPV, chromeStorageService);
+        
+        addSnackbar('Wallet unlocked successfully', 'success');
+        onUnlock();
+      } else {
+        const newAttemptCount = attemptCount + 1;
+        setAttemptCount(newAttemptCount);
+        setVerificationFailed(true);
+        
+        if (newAttemptCount >= 3) {
+          addSnackbar('Multiple failed attempts. Please check your password carefully.', 'error');
+        } else {
+          addSnackbar('Incorrect password. Please try again.', 'error');
+        }
+        
+        setTimeout(() => {
+          setVerificationFailed(false);
+          setIsProcessing(false);
+        }, 900);
+      }
+    } catch (error) {
+      console.error('Unlock error:', error);
+      addSnackbar('Failed to unlock wallet. Please try again.', 'error');
+      setIsProcessing(false);
     }
   };
 
@@ -79,6 +108,7 @@ export const UnlockWallet = (props: UnlockWalletProps) => {
           shake={verificationFailed ? 'true' : 'false'}
           autoFocus
           onKeyDown={(e) => e.stopPropagation()}
+          disabled={isProcessing}
         />
         <Button
           theme={theme}

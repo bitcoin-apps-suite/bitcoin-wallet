@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Bitcoin Wallet",
+  "version": "1.0.0",
+  "description": "Secure Bitcoin wallet for BSV blockchain with advanced transaction management",
+  "icons": {
+    "16": "favicon-16x16.png",
+    "32": "favicon-32x32.png",
+    "48": "logo48.png",
+    "128": "logo128.png",
+    "192": "logo192.png"
+  },
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "favicon-16x16.png",
+      "32": "favicon-32x32.png",
+      "48": "logo48.png",
+      "128": "logo128.png"
+    }
+  },
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://localhost:3006/*"
+  ]
+} 

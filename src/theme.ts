@@ -48,7 +48,7 @@ export const theme: Theme = {
     },
   },
   settings: {
-    repo: 'https://github.com/bitcoin-wallet-bapp/bitcoin-wallet',
+    repo: 'https://github.com/bitcoin-apps-suite/bitcoin-wallet',
     services: {
       apps: true,
       bsv20: true,

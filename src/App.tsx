@@ -8,11 +8,13 @@ import { BottomMenuProvider } from './contexts/providers/BottomMenuProvider';
 import { SnackbarProvider } from './contexts/providers/SnackbarProvider';
 import { NetWork } from 'yours-wallet-provider';
 import { BrowserRouter } from 'react-router-dom';
+import { PocBar } from './components/PocBar';
 
 const AppContainer = styled.div<WhiteLabelTheme>`
   width: 100vw;
   height: 100vh;
   background-color: ${({ theme }) => theme.color.global.walletBackground};
+  padding-top: 32px;
 `;
 
 export const App = () => {
@@ -20,6 +22,7 @@ export const App = () => {
 
   return (
     <BrowserRouter>
+      <PocBar color="#eab308" />
       <AppContainer theme={theme}>
         <BlockHeightProvider>
           <QueueProvider>

@@ -54,6 +54,9 @@ import { Account, ChromeStorageObject } from '../services/types/chromeStorage.ty
 import { SendBsv20View } from '../components/SendBsv20View';
 import { FaucetButton } from '../components/FaucetButton';
 import { TxHistory } from '../components/TxHistory';
+import { ViewModeToggle, ViewMode } from '../components/ViewModeToggle';
+import { TokenVisualizer } from '../components/TokenVisualizer';
+import { WalletShowcaseTabs } from '../components/WalletShowcaseTabs';
 
 const AppContainer = styled.div<WhiteLabelTheme>`
   display: flex;
@@ -247,6 +250,7 @@ export const BsvWallet = (props: BsvWalletProps) => {
   const [filteredTokens, setFilteredTokens] = useState<Bsv20[]>([]);
   const [randomKey, setRandomKey] = useState(Math.random());
   const isTestnet = chromeStorageService?.getNetwork() === 'testnet' ? true : false;
+  const [viewMode, setViewMode] = useState<ViewMode>('visual');
 
   const [recipients, setRecipients] = useState<Recipient[]>([
     { id: crypto.randomUUID(), address: '', satSendAmount: null, usdSendAmount: null, amountType: 'bsv' },
@@ -595,10 +599,18 @@ export const BsvWallet = (props: BsvWalletProps) => {
     <AppContainer theme={theme}>
       <Taskbar />
       <AppHeader theme={theme} onTitleClick={() => setPageState('main')} />
+      <WalletShowcaseTabs onTabChange={(tabId) => console.log('Tab changed to:', tabId)} />
       <ContentContainer theme={theme}>
         {/* File Types Sidebar - moved to left */}
         <Sidebar theme={theme}>
           <SidebarTitle theme={theme}>File Type Assets</SidebarTitle>
+          
+          {/* View Mode Toggle */}
+          <ViewModeToggle
+            currentMode={viewMode}
+            onModeChange={setViewMode}
+            theme={{ theme }}
+          />
           
           {/* Media Files */}
           <AssetRow
@@ -720,25 +732,83 @@ export const BsvWallet = (props: BsvWalletProps) => {
         </Sidebar>
         
         <WalletMainContent theme={theme}>
-          {/* 3D Bubble Visualization replacing traditional UI */}
-          <BubbleVisualization
-            theme={theme as any}
-            utxos={[]}
-            balance={bsvBalance * BSV_DECIMAL_CONVERSION}
-            exchangeRate={exchangeRate}
-            onSend={(id) => {
-              console.log('Send from bubble:', id);
-              setPageState('send');
-            }}
-            onReceive={(id) => {
-              console.log('Receive to bubble:', id);
-              setPageState('receive');
-            }}
-            onCombine={(ids) => {
-              console.log('Combine UTXOs:', ids);
-              // TODO: Implement UTXO combination logic
-              addSnackbar('Combining UTXOs...', 'info');
-            }}
+          {/* Token Visualizer with multiple view modes */}
+          <TokenVisualizer
+            theme={{ theme }}
+            viewMode={viewMode}
+            tokens={[
+              // Bitcoin blockchain token/asset representations
+              {
+                address: bsvAddress || '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+                tokenId: 'ord-424242',
+                contentType: 'image/png',
+                data: 'QmPK1s3pNYLi9ERiq3BDxKa1XosgWwFRQUydHUtz4YgpqB', // IPFS hash example
+                metadata: {
+                  name: 'Bitcoin Punk #424242',
+                  description: 'Ordinal inscription on Bitcoin',
+                  block: 823456,
+                  txid: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+                  vout: 0,
+                  satoshi: 100000000,
+                  inscription_number: 424242
+                }
+              },
+              {
+                address: '1CounterpartyXXXXXXXXXXXXXXXUWLpVr',
+                tokenId: 'PEPECASH',
+                contentType: 'token/counterparty',
+                data: {
+                  supply: '1000000000',
+                  divisible: true,
+                  locked: true
+                },
+                metadata: {
+                  name: 'PEPECASH',
+                  description: 'Rare Pepe trading card currency',
+                  asset_id: 'A11451804412046674500',
+                  block: 428919,
+                  txid: '4a60a05c3023e24398b3c653b8531b3f38b23dc50a6dc1823b89fab06e58f10f'
+                }
+              },
+              {
+                address: bsvAddress || '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+                tokenId: 'bsv20-ordi',
+                contentType: 'application/bsv-20',
+                data: {
+                  p: 'bsv-20',
+                  op: 'deploy',
+                  tick: 'ORDI',
+                  max: '21000000',
+                  lim: '1000'
+                },
+                metadata: {
+                  name: 'BSV-20 ORDI Token',
+                  description: 'BSV-20 fungible token standard',
+                  deployed_at: 783968,
+                  txid: '9b1125c15aa6a89f8a0de935c1533c098e55b4ebf66e5b50ae0da45bb0add812',
+                  current_supply: '15234000'
+                }
+              },
+              {
+                address: '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy',
+                tokenId: 'rgb-asset-001',
+                contentType: 'application/rgb',
+                data: {
+                  schema: 'RGB20',
+                  contract_id: 'rgb:2WBwJZV-Q5t8G5Pqt-v3vMRVi3n-M3BVC3jBc-Mpq5NTqKe-2NyysCS',
+                  ticker: 'USDT',
+                  name: 'Tether USD (RGB)',
+                  precision: 8
+                },
+                metadata: {
+                  name: 'RGB USDT',
+                  description: 'RGB smart contract for USDT on Bitcoin',
+                  genesis_txid: 'c1d3b2a1e8f9c8b7a6d5e4c3b2a1f0e9d8c7b6a5d4c3b2a1e0f9d8c7b6a5d4c3',
+                  utxo: '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy:1',
+                  amount: '1000000000'
+                }
+              }
+            ]}
           />
         </WalletMainContent>
       </ContentContainer>

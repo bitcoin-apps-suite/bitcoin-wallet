@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
+import { FaGithub, FaTrophy } from 'react-icons/fa';
 
 interface DropdownItem {
   label?: string;
@@ -122,6 +123,22 @@ const StatusContainer = styled.div`
   color: rgba(255, 255, 255, 0.8);
 `;
 
+const StatusLink = styled.a`
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+
+  &:hover {
+    color: #eab308;
+    background: rgba(234, 179, 8, 0.1);
+  }
+`;
+
 export const Taskbar = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showBitcoinSuite, setShowBitcoinSuite] = useState(false);
@@ -131,8 +148,11 @@ export const Taskbar = () => {
     {
       label: 'Bitcoin Wallet',
       items: [
+        { label: 'Home', shortcut: '⌘⇧H', action: () => window.location.href = '/' },
+        { divider: true },
         { label: 'About Bitcoin Wallet', action: () => alert('Bitcoin Wallet v1.0\n\nFull-featured BSV wallet with real-world currency and file type tokens\n\nBuilt with React and BSV SDK') },
         { divider: true },
+        { label: '$BWallet Token', action: () => window.location.href = '/token' },
         { label: 'Preferences...', shortcut: '⌘,', action: () => console.log('Preferences') },
         { label: 'Security Settings...', action: () => console.log('Security settings') },
         { divider: true },
@@ -194,12 +214,28 @@ export const Taskbar = () => {
       ]
     },
     {
+      label: 'Developers',
+      items: [
+        { label: 'Documentation', action: () => window.location.href = '/docs' },
+        { label: 'Tasks Leaderboard', action: () => window.location.href = '/leaderboard' },
+        { label: 'GitHub Repository', href: 'https://github.com/bitcoin-apps-suite/bitcoin-wallet', target: '_blank' },
+        { divider: true },
+        { label: 'API Reference', action: () => window.location.href = '/docs#api-reference' },
+        { label: 'Bitcoin Integration Guide', action: () => window.location.href = '/docs#bitcoin-integration' },
+        { label: 'Contributing Guide', action: () => window.location.href = '/docs#contributing' },
+        { divider: true },
+        { label: 'Report Bug', href: 'https://github.com/bitcoin-apps-suite/bitcoin-wallet/issues/new?template=bug_report.md', target: '_blank' },
+        { label: 'Request Feature', href: 'https://github.com/bitcoin-apps-suite/bitcoin-wallet/issues/new?template=feature_request.md', target: '_blank' },
+        { label: 'Submit Task Solution', href: 'https://github.com/bitcoin-apps-suite/bitcoin-wallet/pulls', target: '_blank' }
+      ]
+    },
+    {
       label: 'Help',
       items: [
         { label: 'Bitcoin Wallet Help', shortcut: '⌘?', action: () => alert('Bitcoin Wallet v1.0\n\nA full-featured BSV wallet for real-world utility') },
         { label: 'Keyboard Shortcuts', action: () => console.log('Show shortcuts') },
         { divider: true },
-        { label: 'Report Issue', href: 'https://github.com/b0ase/bitcoin-wallet/issues', target: '_blank' },
+        { label: 'Report Issue', href: 'https://github.com/bitcoin-apps-suite/bitcoin-wallet/issues', target: '_blank' },
         { label: 'Contact Support', href: 'https://twitter.com/b0ase', target: '_blank' }
       ]
     }
@@ -246,7 +282,8 @@ export const Taskbar = () => {
             setShowBitcoinSuite(!showBitcoinSuite);
             setActiveMenu(null);
           }}
-          title="Bitcoin Suite Apps"
+          onDoubleClick={() => window.location.href = '/'}
+          title="Bitcoin Suite Apps - Double-click to go home"
         >
           ₿
         </BitcoinButton>
@@ -356,6 +393,14 @@ export const Taskbar = () => {
 
       {/* Right side - Status items */}
       <StatusContainer>
+        <StatusLink href="/leaderboard" title="Contributors Leaderboard">
+          <FaTrophy style={{ marginRight: '4px' }} />
+          Leaderboard
+        </StatusLink>
+        <StatusLink href="https://github.com/bitcoin-apps-suite/bitcoin-wallet" target="_blank" rel="noopener noreferrer" title="GitHub Repository">
+          <FaGithub style={{ marginRight: '4px' }} />
+          GitHub
+        </StatusLink>
         <span>BSV Network</span>
         <span style={{ color: '#fbbf24' }}>●</span>
       </StatusContainer>

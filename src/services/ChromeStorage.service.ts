@@ -21,12 +21,16 @@ export class ChromeStorageService {
   storage: Partial<ChromeStorageObject> | undefined;
 
   private set = async (obj: Partial<ChromeStorageObject>): Promise<void> => {
+    if (!obj || typeof obj !== 'object') {
+      throw new Error('Invalid storage object provided');
+    }
+    
     try {
       await storageAdapter.set(obj);
       await this.getAndSetStorage();
     } catch (error) {
       console.error('Storage set error:', error);
-      throw error;
+      throw new Error(`Failed to save to storage: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -36,17 +40,21 @@ export class ChromeStorageService {
       return result as Partial<ChromeStorageObject>;
     } catch (error) {
       console.error('Storage get error:', error);
-      return {};
+      throw new Error(`Failed to retrieve from storage: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
   remove = async (keyOrKeys: string | string[]): Promise<void> => {
+    if (!keyOrKeys) {
+      throw new Error('No keys specified for removal');
+    }
+    
     try {
       await storageAdapter.remove(keyOrKeys);
       await this.getAndSetStorage();
     } catch (error) {
       console.error('Storage remove error:', error);
-      throw error;
+      throw new Error(`Failed to remove from storage: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 

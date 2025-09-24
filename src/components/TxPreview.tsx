@@ -73,46 +73,93 @@ type TxPreviewProps = {
 };
 
 const TxPreview = ({ txData, inputsToSign }: TxPreviewProps) => {
-  console.log('txData', txData);
   const { theme } = useTheme();
   const labelMaxLength = 20;
-  const mappedInputs = useMemo(() => txData?.spends.map((txo: Txo) => mapOrdinal(txo)), [txData]);
-  const mappedOutputs = useMemo(() => txData?.txos.map((txo: Txo) => mapOrdinal(txo)), [txData]);
-
-  console.log('mappedInputs', mappedInputs);
-  console.log('mappedOutputs', mappedOutputs);
+  
+  const mappedInputs = useMemo(() => {
+    try {
+      return txData?.spends?.map((txo: Txo) => mapOrdinal(txo)) || [];
+    } catch (error) {
+      console.error('Error mapping inputs:', error);
+      return [];
+    }
+  }, [txData]);
+  
+  const mappedOutputs = useMemo(() => {
+    try {
+      return txData?.txos?.map((txo: Txo) => mapOrdinal(txo)) || [];
+    } catch (error) {
+      console.error('Error mapping outputs:', error);
+      return [];
+    }
+  }, [txData]);
 
   const renderNftOrTokenImage = (ordinal: Ordinal) => {
-    const inscriptionWithOutpoint =
-      ordinal?.origin?.data?.insc?.file?.type.startsWith('image') && !!ordinal.origin.outpoint;
-    const bsv20WithIcon = !!ordinal?.data?.bsv20 && !!ordinal.data.bsv20.icon;
-    const isLock = !!ordinal?.data?.lock;
+    try {
+      const inscriptionWithOutpoint =
+        ordinal?.origin?.data?.insc?.file?.type?.startsWith('image') && !!ordinal.origin?.outpoint;
+      const bsv20WithIcon = !!ordinal?.data?.bsv20 && !!ordinal.data.bsv20.icon;
+      const isLock = !!ordinal?.data?.lock;
 
-    if (inscriptionWithOutpoint) {
-      return <NftImage $isCircle={false} src={`${GP_BASE_URL}/content/${ordinal.origin?.outpoint}`} alt="NFT" />;
-    }
+      if (inscriptionWithOutpoint) {
+        return (
+          <NftImage 
+            $isCircle={false} 
+            src={`${GP_BASE_URL}/content/${ordinal.origin?.outpoint}`} 
+            alt="NFT"
+            onError={(e) => {
+              console.warn('Failed to load NFT image:', ordinal.origin?.outpoint);
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        );
+      }
 
-    if (bsv20WithIcon) {
-      return (
-        <NftImage
-          $isCircle
-          src={
-            ordinal.data.bsv20?.icon?.startsWith('https://')
-              ? ordinal.data.bsv20.icon
-              : `${GP_BASE_URL}/content/${ordinal.data.bsv20?.icon}`
-          }
-          alt="Token"
-        />
-      );
-    }
+      if (bsv20WithIcon) {
+        return (
+          <NftImage
+            $isCircle
+            src={
+              ordinal.data.bsv20?.icon?.startsWith('https://')
+                ? ordinal.data.bsv20.icon
+                : `${GP_BASE_URL}/content/${ordinal.data.bsv20?.icon}`
+            }
+            alt="Token"
+            onError={(e) => {
+              console.warn('Failed to load token image:', ordinal.data.bsv20?.icon);
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        );
+      }
 
-    if (isLock) {
-      return <NftImage $isCircle src={lockImage} alt="Lock" />;
+      if (isLock) {
+        return <NftImage $isCircle src={lockImage} alt="Lock" />;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error rendering NFT/token image:', error);
+      return null;
     }
-    return null;
   };
 
-  if (!mappedInputs || !mappedOutputs) return null;
+  if (!txData) {
+    return (
+      <Container>
+        <SectionHeader theme={theme}>Transaction Preview</SectionHeader>
+        <RowData theme={theme}>No transaction data available</RowData>
+      </Container>
+    );
+  }
+  
+  if (!mappedInputs || !mappedOutputs) {
+    return (
+      <Container>
+        <SectionHeader theme={theme}>Transaction Preview</SectionHeader>
+        <RowData theme={theme}>Loading transaction data...</RowData>
+      </Container>
+    );
+  }
 
   return (
     <Container>
