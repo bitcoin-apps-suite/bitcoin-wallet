@@ -22,3 +22,25 @@ rootDiv.render(
     </ServiceProvider>
   </Web3RequestProvider>,
 );
+
+// Register PWA Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then((registration) => {
+        console.log('PWA Service Worker registered:', registration);
+        
+        // Handle protocol launches
+        if (window.location.search.includes('action=')) {
+          const params = new URLSearchParams(window.location.search);
+          const action = params.get('action');
+          console.log('Protocol launch action:', action);
+          // Handle the action in your app
+        }
+      })
+      .catch((error) => {
+        console.error('PWA Service Worker registration failed:', error);
+      });
+  });
+}
