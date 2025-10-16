@@ -4,8 +4,9 @@ import { WhiteLabelTheme } from '../theme.types';
 import { MobileFloatingAction } from './MobileFloatingAction';
 import { MobileSwipeableView } from './MobileSwipeableView';
 import { MobileFullScreenModal } from './MobileFullScreenModal';
+import { QrCode } from './QrCode';
 import { formatUSD } from '../utils/format';
-import { FaBitcoin, FaChevronUp } from 'react-icons/fa';
+import { FaBitcoin, FaChevronUp, FaCamera, FaCopy } from 'react-icons/fa';
 
 interface MobileOptimizedWalletProps {
   theme: WhiteLabelTheme;
@@ -233,6 +234,7 @@ export const MobileOptimizedWallet = ({
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
+  const [cameraModalOpen, setCameraModalOpen] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
 
   const handleRefresh = () => {
@@ -307,7 +309,7 @@ export const MobileOptimizedWallet = ({
         onSend={() => setSendModalOpen(true)}
         onReceive={() => setReceiveModalOpen(true)}
         onHistory={() => setHistoryModalOpen(true)}
-        onExchange={() => setExchangeModalOpen(true)}
+        onExchange={() => setCameraModalOpen(true)}
       />
 
       <MobileFullScreenModal
@@ -317,7 +319,56 @@ export const MobileOptimizedWallet = ({
         onConfirm={() => console.log('Send confirmed')}
         theme={theme}
       >
-        <div style={{ color: '#fff' }}>Send modal content here</div>
+        <div style={{ color: '#fff', padding: '1rem' }}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>
+              Recipient Address
+            </label>
+            <input 
+              type="text" 
+              placeholder="Enter Bitcoin address or scan QR code"
+              style={{ 
+                width: '100%', 
+                padding: '12px', 
+                backgroundColor: 'rgba(255,255,255,0.1)', 
+                border: '1px solid rgba(234,179,8,0.3)',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '16px'
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>
+              Amount (BSV)
+            </label>
+            <input 
+              type="number" 
+              placeholder="0.00000000"
+              style={{ 
+                width: '100%', 
+                padding: '12px', 
+                backgroundColor: 'rgba(255,255,255,0.1)', 
+                border: '1px solid rgba(234,179,8,0.3)',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '16px'
+              }}
+            />
+          </div>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            padding: '12px',
+            backgroundColor: 'rgba(234,179,8,0.1)',
+            borderRadius: '8px',
+            marginBottom: '1rem'
+          }}>
+            <span style={{ fontSize: '0.9rem' }}>Available Balance:</span>
+            <span style={{ color: '#eab308', fontWeight: 'bold' }}>{bsvBalance.toFixed(8)} BSV</span>
+          </div>
+        </div>
       </MobileFullScreenModal>
 
       <MobileFullScreenModal
@@ -326,7 +377,50 @@ export const MobileOptimizedWallet = ({
         title="Receive Bitcoin"
         theme={theme}
       >
-        <div style={{ color: '#fff' }}>Receive modal content here</div>
+        <div style={{ color: '#fff', padding: '1rem', textAlign: 'center' }}>
+          <div style={{ 
+            backgroundColor: '#fff', 
+            padding: '1rem', 
+            borderRadius: '12px', 
+            marginBottom: '1rem',
+            display: 'inline-block'
+          }}>
+            <QrCode address={address} />
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>
+              Your Bitcoin Address:
+            </div>
+            <div style={{ 
+              backgroundColor: 'rgba(255,255,255,0.1)', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              wordBreak: 'break-all',
+              fontSize: '14px',
+              fontFamily: 'monospace'
+            }}>
+              {address}
+            </div>
+          </div>
+          <button
+            onClick={() => navigator.clipboard.writeText(address)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              backgroundColor: 'rgba(234,179,8,0.2)',
+              color: '#eab308',
+              border: '1px solid rgba(234,179,8,0.3)',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              margin: '0 auto',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            <FaCopy /> Copy Address
+          </button>
+        </div>
       </MobileFullScreenModal>
 
       <MobileFullScreenModal
@@ -335,16 +429,85 @@ export const MobileOptimizedWallet = ({
         title="Transaction History"
         theme={theme}
       >
-        <div style={{ color: '#fff' }}>History content here</div>
+        <div style={{ color: '#fff', padding: '1rem' }}>
+          {[
+            { type: 'Received', amount: '+0.00123456', date: '2025-10-16', status: 'Confirmed' },
+            { type: 'Sent', amount: '-0.00098765', date: '2025-10-15', status: 'Confirmed' },
+            { type: 'Received', amount: '+0.00200000', date: '2025-10-14', status: 'Confirmed' }
+          ].map((tx, index) => (
+            <div key={index} style={{ 
+              backgroundColor: 'rgba(255,255,255,0.05)', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              marginBottom: '8px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <div style={{ fontWeight: 'bold', color: tx.type === 'Received' ? '#22c55e' : '#ef4444' }}>
+                  {tx.type}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+                  {tx.date}
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 'bold', color: tx.type === 'Received' ? '#22c55e' : '#ef4444' }}>
+                  {tx.amount} BSV
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+                  {tx.status}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </MobileFullScreenModal>
 
       <MobileFullScreenModal
-        isOpen={exchangeModalOpen}
-        onClose={() => setExchangeModalOpen(false)}
-        title="Exchange"
+        isOpen={cameraModalOpen}
+        onClose={() => setCameraModalOpen(false)}
+        title="Scan QR Code"
         theme={theme}
       >
-        <div style={{ color: '#fff' }}>Exchange content here</div>
+        <div style={{ color: '#fff', padding: '1rem', textAlign: 'center' }}>
+          <div style={{ 
+            backgroundColor: 'rgba(255,255,255,0.1)', 
+            height: '300px', 
+            borderRadius: '12px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            marginBottom: '1rem',
+            border: '2px dashed rgba(234,179,8,0.3)'
+          }}>
+            <div>
+              <FaCamera style={{ fontSize: '48px', color: '#eab308', marginBottom: '1rem' }} />
+              <div style={{ fontSize: '16px', marginBottom: '0.5rem' }}>Camera Access</div>
+              <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>
+                Point your camera at a QR code to scan
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => console.log('Activate camera')}
+            style={{
+              backgroundColor: '#eab308',
+              color: '#000',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              width: '100%'
+            }}
+          >
+            <FaCamera style={{ marginRight: '8px' }} />
+            Activate Camera
+          </button>
+        </div>
       </MobileFullScreenModal>
     </Container>
   );

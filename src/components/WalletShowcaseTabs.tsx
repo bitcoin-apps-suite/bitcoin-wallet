@@ -23,6 +23,16 @@ const TabsContainer = styled.div`
   border-bottom: 2px solid #f7931a;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 
+  /* Hide on mobile - All Assets dropdown is sufficient */
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+  
+  /* Extra small devices */
+  @media (max-width: 480px) {
+    display: none !important;
+  }
+
   &::-webkit-scrollbar {
     height: 6px;
   }

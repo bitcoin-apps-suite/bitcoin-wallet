@@ -12,10 +12,12 @@ export const isMobileDevice = (): boolean => {
   // Check touch capability
   const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   
-  // Check screen size
+  // Check screen size - be more aggressive about mobile detection
   const isSmallScreen = window.innerWidth <= 768;
   
-  return mobileRegex.test(userAgent) || (hasTouch && isSmallScreen);
+  // More aggressive mobile detection for responsive design
+  // Treat ANY small screen as mobile, regardless of touch capability
+  return isSmallScreen || mobileRegex.test(userAgent);
 };
 
 export const isTablet = (): boolean => {

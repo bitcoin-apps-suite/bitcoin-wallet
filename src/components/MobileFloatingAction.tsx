@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled, { keyframes, css } from 'styled-components';
-import { FaPlus, FaTimes, FaPaperPlane, FaQrcode, FaHistory, FaExchangeAlt } from 'react-icons/fa';
+import { FaPlus, FaTimes, FaPaperPlane, FaQrcode, FaHistory, FaCamera } from 'react-icons/fa';
 import { WhiteLabelTheme } from '../theme.types';
 
 interface FloatingActionProps {
@@ -118,7 +118,7 @@ export const MobileFloatingAction = ({ theme, onSend, onReceive, onHistory, onEx
     { icon: FaPaperPlane, label: 'Send', action: onSend, position: { bottom: 96, right: 24 } },
     { icon: FaQrcode, label: 'Receive', action: onReceive, position: { bottom: 156, right: 24 } },
     { icon: FaHistory, label: 'History', action: onHistory, position: { bottom: 96, right: 84 } },
-    { icon: FaExchangeAlt, label: 'Exchange', action: onExchange, position: { bottom: 156, right: 84 } }
+    { icon: FaCamera, label: 'Scan QR', action: onExchange, position: { bottom: 156, right: 84 } }
   ];
 
   useEffect(() => {

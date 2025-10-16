@@ -23,12 +23,25 @@ const PocBannerContainer = styled.div<{ color: string }>`
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   border-bottom: 1px solid rgba(0,0,0,0.2);
   padding: 0 12px;
+
+  @media (max-width: 768px) {
+    height: 28px;
+    font-size: 11px;
+    padding: 0 8px;
+    overflow: hidden;
+  }
 `;
 
 const ContentContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+
+  @media (max-width: 768px) {
+    gap: 4px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
 `;
 
 const WarningIcon = styled.span`
@@ -41,6 +54,10 @@ const ConceptLabel = styled.span`
 
 const ConceptText = styled.span`
   opacity: 0.9;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const LinksContainer = styled.div`
@@ -48,6 +65,12 @@ const LinksContainer = styled.div`
   gap: 12px;
   margin-left: 16px;
   font-size: 12px;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+    margin-left: 8px;
+    font-size: 10px;
+  }
 `;
 
 const PocLink = styled.a`
@@ -59,6 +82,13 @@ const PocLink = styled.a`
   
   &:hover {
     opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
   }
 `;
 

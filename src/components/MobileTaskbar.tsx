@@ -12,20 +12,30 @@ const MobileTaskbarContainer = styled.div<{ theme?: WhiteLabelTheme['theme'] }>`
   bottom: 0;
   left: 0;
   right: 0;
-  height: 80px;
+  height: 88px;
   background: ${({ theme }) => theme?.color.global.row || 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)'};
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  padding: 0 16px;
+  justify-content: space-evenly;
+  padding: 8px 20px;
   z-index: 10000;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(16px);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  
+  /* Safe area handling for newer phones */
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
 
   @media (max-width: 480px) {
-    height: 70px;
-    padding: 0 8px;
+    height: 82px;
+    padding: 6px 16px;
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+  }
+  
+  @media (max-width: 360px) {
+    height: 78px;
+    padding: 4px 12px;
+    padding-bottom: max(4px, env(safe-area-inset-bottom));
   }
 `;
 
@@ -38,44 +48,85 @@ const MobileTaskbarButton = styled.button<{ $active?: boolean; $primary?: boolea
     $primary ? 'linear-gradient(135deg, #eab308, #ca8a04)' :
     $active ? 'rgba(234, 179, 8, 0.2)' : 'transparent'};
   border: none;
-  border-radius: 12px;
-  padding: 8px 12px;
-  min-width: 60px;
-  height: 60px;
+  border-radius: 16px;
+  padding: 12px;
+  min-width: 68px;
+  height: 68px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: ${({ $primary }) => $primary ? '#000' : '#ffffff'};
+  position: relative;
+  
+  /* Larger touch target for better accessibility */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border-radius: 20px;
+  }
   
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.92);
+    background: ${({ $primary }) => 
+      $primary ? 'linear-gradient(135deg, #ca8a04, #a16207)' :
+      'rgba(234, 179, 8, 0.3)'};
   }
 
   @media (max-width: 480px) {
-    min-width: 50px;
-    height: 50px;
-    padding: 6px 8px;
+    min-width: 62px;
+    height: 62px;
+    padding: 10px;
+    border-radius: 14px;
+    
+    &::before {
+      top: -6px;
+      left: -6px;
+      right: -6px;
+      bottom: -6px;
+    }
+  }
+  
+  @media (max-width: 360px) {
+    min-width: 56px;
+    height: 56px;
+    padding: 8px;
+    border-radius: 12px;
   }
 `;
 
 const ButtonIcon = styled.div<{ $primary?: boolean }>`
-  font-size: 20px;
-  margin-bottom: 4px;
+  font-size: 22px;
+  margin-bottom: 6px;
   color: ${({ $primary }) => $primary ? '#000' : '#eab308'};
+  transition: all 0.2s ease;
 
   @media (max-width: 480px) {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  
+  @media (max-width: 360px) {
     font-size: 18px;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
   }
 `;
 
 const ButtonLabel = styled.span<{ $primary?: boolean }>`
-  font-size: 10px;
-  font-weight: 500;
-  color: ${({ $primary }) => $primary ? '#000' : '#ffffff'};
+  font-size: 11px;
+  font-weight: 600;
+  color: ${({ $primary }) => $primary ? '#000' : 'rgba(255, 255, 255, 0.9)'};
   text-align: center;
-  line-height: 1;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
 
   @media (max-width: 480px) {
+    font-size: 10px;
+  }
+  
+  @media (max-width: 360px) {
     font-size: 9px;
   }
 `;
@@ -100,13 +151,44 @@ const MobileMenuPanel = styled.div<{ $show: boolean; theme?: WhiteLabelTheme['th
   left: 0;
   right: 0;
   background: ${({ theme }) => theme?.color.global.row || '#1a1a1a'};
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
   padding: 24px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
   transform: translateY(${({ $show }) => $show ? '0' : '100%'});
-  transition: transform 0.3s ease;
-  max-height: 70vh;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 75vh;
   overflow-y: auto;
+  
+  /* Smooth scrolling for iOS */
+  -webkit-overflow-scrolling: touch;
+  
+  /* Custom scrollbar */
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(234, 179, 8, 0.3);
+    border-radius: 2px;
+  }
+  
+  /* Pull indicator */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
 `;
 
 const MenuHeader = styled.div`
