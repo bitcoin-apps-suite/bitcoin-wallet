@@ -14,16 +14,17 @@ import { PocBar } from './components/PocBar';
 import { HandCashCallback } from './components/HandCashCallback';
 import { useEffect } from 'react';
 
-const AppContainer = styled.div<WhiteLabelTheme & { hasBar: boolean }>`
+const AppContainer = styled.div<WhiteLabelTheme & { $hasBar: boolean }>`
   width: 100vw;
   height: 100vh;
   background-color: ${({ theme }) => theme.color.global.walletBackground};
-  padding-top: ${({ hasBar }) => hasBar ? '32px' : '0'};
+  padding-top: ${({ $hasBar }) => $hasBar ? '32px' : '0'};
 
   @media (max-width: 768px) {
     height: auto;
     min-height: 100vh;
     overflow-x: hidden;
+    padding-top: ${({ $hasBar }) => $hasBar ? '28px' : '0'};
   }
 `;
 
@@ -39,9 +40,9 @@ export const App = () => {
   }, [isInOS, setTitle]);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       {!isInOS && <PocBar color="#eab308" />}
-      <AppContainer theme={theme} hasBar={!isInOS}>
+      <AppContainer theme={theme} $hasBar={!isInOS}>
         <HandCashProvider>
           <BlockHeightProvider>
             <QueueProvider>

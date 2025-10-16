@@ -10,10 +10,6 @@
   "theme_color": "#f7931a",
   "protocol_handlers": [
     {
-      "protocol": "web+bitcoin-wallet",
-      "url": "/?action=%s"
-    },
-    {
       "protocol": "bitcoin",
       "url": "/?address=%s"
     }
