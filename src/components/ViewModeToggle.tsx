@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { FaDatabase, FaCube, FaNetworkWired } from 'react-icons/fa';
 import { WhiteLabelTheme } from '../theme.types';
+import { isMobileDevice } from '../utils/deviceDetection';
 
 export type ViewMode = 'data' | 'visual' | 'network';
 
@@ -99,9 +100,13 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
         {currentMode === 'data' && 
           'View addresses, tokens, and their embedded data in a structured format'}
         {currentMode === 'visual' && 
-          'See 3D models, images, and other media as they actually appear'}
+          (isMobileDevice() 
+            ? 'View tokens and assets in a mobile-optimized card layout'
+            : 'See 3D models, images, and other media as they actually appear')}
         {currentMode === 'network' && 
-          'Explore relationships between addresses and tokens in context'}
+          (isMobileDevice()
+            ? 'Browse network connections in a mobile-friendly list view'
+            : 'Explore relationships between addresses and tokens in context')}
       </ModeDescription>
     </div>
   );

@@ -13,6 +13,7 @@ import switchIcon from '../assets/chevrons.svg';
 import { WhiteLabelTheme } from '../theme.types';
 import { useNavigate } from 'react-router-dom';
 import { useBottomMenu } from '../hooks/useBottomMenu';
+import { MobileHamburgerMenu } from './MobileHamburgerMenu';
 
 const Container = styled.div<WhiteLabelTheme>`
   display: flex;
@@ -23,6 +24,14 @@ const Container = styled.div<WhiteLabelTheme>`
   top: 0;
   z-index: 10;
   background-color: ${({ theme }) => theme.color.global.walletBackground};
+  padding: 0 0.5rem;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+    flex-wrap: nowrap;
+    min-height: 3.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const LogoWrapper = styled.div`
@@ -35,6 +44,11 @@ const LogoWrapper = styled.div`
 const Logo = styled.img`
   width: 6.5rem;
   margin: 1rem;
+
+  @media (max-width: 768px) {
+    width: 4.5rem;
+    margin: 0.25rem;
+  }
 `;
 
 const Circle = styled.img`
@@ -60,6 +74,19 @@ const Dropdown = styled.div<WhiteLabelTheme>`
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 4rem;
+    left: 1rem;
+    right: 1rem;
+    min-width: auto;
+    width: auto;
+    max-width: none;
+    max-height: 60vh;
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
 `;
 
 const DropdownItem = styled.div`
@@ -71,6 +98,11 @@ const DropdownItem = styled.div`
 
   &:hover {
     background: ${({ theme }) => theme.color.global.contrast + '10'};
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+    touch-action: manipulation;
   }
 `;
 
@@ -109,6 +141,24 @@ const DropdownAddressText = styled.p<WhiteLabelTheme>`
 const FlexContainer = styled.div`
   display: flex;
   align-items: center;
+`;
+
+const DesktopOnly = styled.div`
+  display: flex;
+  align-items: center;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const MobileOnly = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+  }
 `;
 
 export const TopNav = () => {
@@ -170,67 +220,82 @@ export const TopNav = () => {
         <Text style={{ margin: '0', marginLeft: '-0.25rem' }} theme={theme}>
           /
         </Text>
-        <Circle src={accountObj.account?.icon ?? activeCircle} />
-        <FlexContainer style={{ justifyContent: 'flex-start', minWidth: 'fit-content' }} ref={toggleRef}>
-          <Text
-            style={{
-              margin: '0 0.25rem 0 0.25rem',
-              textAlign: 'left',
-              color: theme.color.global.contrast,
-              fontSize: '0.75rem',
-              cursor: 'pointer',
-              minWidth: 'fit-content',
-            }}
-            theme={theme}
-            onClick={toggleDropdown}
-          >
-            {accountObj.account?.name ?? accountObj.account?.addresses.identityAddress}
-          </Text>
-          <SwitchIcon src={switchIcon} onClick={toggleDropdown} />
-        </FlexContainer>
-        {dropdownVisible && (
-          <Dropdown theme={theme} ref={dropdownRef}>
-            {chromeStorageService.getAllAccounts().map((account) => (
-              <DropdownItem
-                key={account.addresses.identityAddress}
-                theme={theme}
-                onClick={() => handleSwitchAccount(account.addresses.identityAddress)}
-              >
+        <DesktopOnly>
+          <Circle src={accountObj.account?.icon ?? activeCircle} />
+          <FlexContainer style={{ justifyContent: 'flex-start', minWidth: 'fit-content' }} ref={toggleRef}>
+            <Text
+              style={{
+                margin: '0 0.25rem 0 0.25rem',
+                textAlign: 'left',
+                color: theme.color.global.contrast,
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                minWidth: 'fit-content',
+              }}
+              theme={theme}
+              onClick={toggleDropdown}
+            >
+              {accountObj.account?.name ?? accountObj.account?.addresses.identityAddress}
+            </Text>
+            <SwitchIcon src={switchIcon} onClick={toggleDropdown} />
+          </FlexContainer>
+          {dropdownVisible && (
+            <Dropdown theme={theme} ref={dropdownRef}>
+              {chromeStorageService.getAllAccounts().map((account) => (
+                <DropdownItem
+                  key={account.addresses.identityAddress}
+                  theme={theme}
+                  onClick={() => handleSwitchAccount(account.addresses.identityAddress)}
+                >
+                  <FlexContainer>
+                    <DropDownIcon src={account.icon} />
+                    <DropDownAccountName style={{ textAlign: 'left' }} theme={theme}>
+                      {account.name}
+                    </DropDownAccountName>
+                  </FlexContainer>
+                  <FlexContainer>
+                    <DropdownAddressText theme={theme}>
+                      {truncate(account.addresses.bsvAddress, 3, 3)}
+                    </DropdownAddressText>
+                    <CopyIcon
+                      src={copyIcon}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyToClipboard(account.addresses.bsvAddress);
+                      }}
+                    />
+                  </FlexContainer>
+                </DropdownItem>
+              ))}
+              <DropdownItem key={'new-account'} theme={theme} onClick={() => handleSelect('settings', 'manage-accounts')}>
                 <FlexContainer>
-                  <DropDownIcon src={account.icon} />
                   <DropDownAccountName style={{ textAlign: 'left' }} theme={theme}>
-                    {account.name}
+                    + Add New Account
                   </DropDownAccountName>
                 </FlexContainer>
-                <FlexContainer>
-                  <DropdownAddressText theme={theme}>
-                    {truncate(account.addresses.bsvAddress, 3, 3)}
-                  </DropdownAddressText>
-                  <CopyIcon
-                    src={copyIcon}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopyToClipboard(account.addresses.bsvAddress);
-                    }}
-                  />
-                </FlexContainer>
               </DropdownItem>
-            ))}
-            <DropdownItem key={'new-account'} theme={theme} onClick={() => handleSelect('settings', 'manage-accounts')}>
-              <FlexContainer>
-                <DropDownAccountName style={{ textAlign: 'left' }} theme={theme}>
-                  + Add New Account
-                </DropDownAccountName>
-              </FlexContainer>
-            </DropdownItem>
-          </Dropdown>
-        )}
+            </Dropdown>
+          )}
+        </DesktopOnly>
       </LogoWrapper>
-      <GithubIcon
-        style={{ marginRight: '1.5rem' }}
-        src={gitHubIcon}
-        onClick={() => window.open(theme.settings.repo, '_blank')}
-      />
+      <DesktopOnly>
+        <GithubIcon
+          style={{ marginRight: '1.5rem' }}
+          src={gitHubIcon}
+          onClick={() => window.open(theme.settings.repo, '_blank')}
+        />
+      </DesktopOnly>
+      <MobileOnly>
+        <MobileHamburgerMenu
+          theme={theme}
+          accounts={chromeStorageService.getAllAccounts()}
+          currentAccount={accountObj.account}
+          onAccountSwitch={handleSwitchAccount}
+          onAddAccount={() => handleSelect('settings', 'manage-accounts')}
+          onCopyAddress={handleCopyToClipboard}
+          onGithubClick={() => window.open(theme.settings.repo, '_blank')}
+        />
+      </MobileOnly>
     </Container>
   );
 };

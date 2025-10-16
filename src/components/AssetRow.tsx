@@ -5,6 +5,7 @@ import { HeaderText, Text } from './Reusable';
 import { formatLargeNumber, formatUSD } from '../utils/format';
 import { Show } from './Show';
 import { BSV_DECIMAL_CONVERSION } from '../utils/constants';
+import { FileAsset } from '../types/FileAsset.types';
 
 const Container = styled.div<WhiteLabelTheme & { $animate: boolean }>`
   display: flex;
@@ -20,12 +21,31 @@ const Container = styled.div<WhiteLabelTheme & { $animate: boolean }>`
   &:hover {
     transform: ${({ $animate }) => ($animate ? 'scale(1.02)' : 'none')};
   }
+
+  @media (max-width: 768px) {
+    width: 95%;
+    padding: 0.75rem 0;
+    margin: 0.125rem;
+    touch-action: manipulation;
+    min-height: 3.5rem;
+  }
 `;
 
-const Icon = styled.img<{ size?: string }>`
+const IconContainer = styled.div<{ isEmoji?: boolean }>`
   width: 2.25rem;
   height: 2.25rem;
   margin-left: 1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: ${({ isEmoji }) => isEmoji ? '1.5rem' : '1rem'};
+  background: ${({ isEmoji }) => isEmoji ? 'transparent' : '#f3f4f6'};
+`;
+
+const Icon = styled.img<{ size?: string }>`
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
 `;
 
@@ -48,6 +68,11 @@ const BalanceWrapper = styled.div`
   align-items: flex-end;
   margin-right: 1rem;
   width: 40%;
+
+  @media (max-width: 768px) {
+    width: 45%;
+    margin-right: 0.5rem;
+  }
 `;
 
 const GradientButton = styled.button<WhiteLabelTheme>`
@@ -88,6 +113,9 @@ export type AssetRowProps = {
   nextUnlock?: number;
   onGetMneeClick?: () => void;
   onClick?: () => void;
+  // File asset support
+  fileAsset?: FileAsset;
+  isFileAsset?: boolean;
 };
 
 export const AssetRow = (props: AssetRowProps) => {
@@ -103,10 +131,22 @@ export const AssetRow = (props: AssetRowProps) => {
     showPointer,
     onGetMneeClick,
     animate = false,
+    fileAsset,
+    isFileAsset = false,
   } = props;
   const { theme } = useTheme();
   const isDisplaySat = isLock && balance < 0.0001;
   const isMneeBalanceZero = !!isMNEE && usdBalance === 0;
+  
+  // File asset display logic
+  const displayTicker = isFileAsset && fileAsset ? fileAsset.filename : ticker;
+  const displayBalance = isFileAsset && fileAsset ? (fileAsset.displayAmount || 1) : balance;
+  const displayValue = isFileAsset && fileAsset ? (fileAsset.value || 0) : usdBalance;
+  const isEmoji = /^\p{Emoji}/u.test(icon);
+  const balanceLabel = isFileAsset 
+    ? (fileAsset?.type === 'nft' ? 'NFT' : 'Shares')
+    : (isLock ? 'Next unlock' : 'Balance');
+  
   return (
     <Container
       style={{ cursor: showPointer ? 'pointer' : undefined }}
@@ -116,14 +156,19 @@ export const AssetRow = (props: AssetRowProps) => {
     >
       <TickerWrapper>
         <Show when={!!icon && icon.length > 0}>
-          <Icon src={icon} />
+          <IconContainer isEmoji={isEmoji}>
+            {isEmoji ? icon : <Icon src={icon} />}
+          </IconContainer>
         </Show>
         <TickerTextWrapper>
           <HeaderText style={{ fontSize: '1rem' }} theme={theme}>
-            {ticker}
+            {displayTicker}
           </HeaderText>
           <Text style={{ margin: '0', textAlign: 'left', color: theme.color.global.gray }} theme={theme}>
-            {isLock ? 'Next unlock' : 'Balance'}
+            {balanceLabel}
+            {isFileAsset && fileAsset?.pending && (
+              <span style={{ color: '#f59e0b', marginLeft: '0.5rem' }}>• Pending</span>
+            )}
           </Text>
         </TickerTextWrapper>
       </TickerWrapper>
@@ -132,13 +177,23 @@ export const AssetRow = (props: AssetRowProps) => {
         whenFalseContent={
           <BalanceWrapper>
             <HeaderText style={{ textAlign: 'right', fontSize: '1rem' }} theme={theme}>
-              {`${formatLargeNumber(
-                isDisplaySat ? balance * BSV_DECIMAL_CONVERSION : balance,
-                isDisplaySat ? 0 : 3,
-              )}${isLock ? (isDisplaySat ? `${balance === 0.00000001 ? ' SAT' : ' SATS'}` : ' BSV') : ''}`}
+              {isFileAsset 
+                ? fileAsset?.type === 'nft' 
+                  ? '1 NFT'
+                  : formatLargeNumber(displayBalance, 0)
+                : `${formatLargeNumber(
+                    isDisplaySat ? balance * BSV_DECIMAL_CONVERSION : balance,
+                    isDisplaySat ? 0 : 3,
+                  )}${isLock ? (isDisplaySat ? `${balance === 0.00000001 ? ' SAT' : ' SATS'}` : ' BSV') : ''}`
+              }
             </HeaderText>
             <Text style={{ textAlign: 'right', margin: '0', color: theme.color.global.gray }} theme={theme}>
-              {isLock ? `Block ${nextUnlock}` : formatUSD(usdBalance)}
+              {isLock 
+                ? `Block ${nextUnlock}` 
+                : isFileAsset 
+                  ? fileAsset?.ticker || 'Asset'
+                  : formatUSD(displayValue)
+              }
             </Text>
           </BalanceWrapper>
         }

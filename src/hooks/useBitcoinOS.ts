@@ -1,12 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 
-declare global {
-  interface Window {
-    parent: Window;
-    location: Location;
-  }
-}
-
 export const useBitcoinOS = () => {
   const [isInOS, setIsInOS] = useState(false);
 

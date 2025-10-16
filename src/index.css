@@ -12,6 +12,14 @@ html, body, #root {
   overflow: hidden;
 }
 
+/* Mobile viewport meta tag support */
+@media screen and (max-width: 768px) {
+  html, body, #root {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}
+
 body {
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',

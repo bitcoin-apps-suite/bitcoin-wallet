@@ -4,6 +4,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, useGLTF, Environment, Grid, Html, Text, Box } from '@react-three/drei';
 import * as THREE from 'three';
 import { WhiteLabelTheme } from '../theme.types';
+import { shouldUse3D, isMobileDevice } from '../utils/deviceDetection';
 
 interface TokenData {
   address: string;
@@ -104,6 +105,93 @@ const DataPreview = styled.pre<{ theme: WhiteLabelTheme['theme'] }>`
   overflow-x: auto;
   max-height: 200px;
   color: ${({ theme }) => theme.color.global.contrast};
+`;
+
+const MobileVisualView = styled.div<{ theme: WhiteLabelTheme['theme'] }>`
+  padding: 1rem;
+  color: ${({ theme }) => theme.color.global.contrast};
+  height: 100%;
+  overflow-y: auto;
+`;
+
+const MobileTokenCard = styled.div<{ theme: WhiteLabelTheme['theme'] }>`
+  background: ${({ theme }) => theme.color.global.row};
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #f7931a;
+`;
+
+const MobileNetworkView = styled.div<{ theme: WhiteLabelTheme['theme'] }>`
+  padding: 1rem;
+  color: ${({ theme }) => theme.color.global.contrast};
+  height: 100%;
+  overflow-y: auto;
+`;
+
+const NetworkNode = styled.div<{ theme: WhiteLabelTheme['theme']; nodeType: string }>`
+  background: ${({ theme }) => theme.color.global.row};
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid ${({ nodeType }) => {
+    switch (nodeType) {
+      case 'image/png': return '#ff6b35';
+      case 'token/counterparty': return '#9c27b0';
+      case 'application/bsv-20': return '#4caf50';
+      case 'application/rgb': return '#2196f3';
+      default: return '#f7931a';
+    }
+  }};
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const NodeIcon = styled.div<{ nodeType: string }>`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: ${({ nodeType }) => {
+    switch (nodeType) {
+      case 'image/png': return 'linear-gradient(135deg, #ff6b35, #ff8c42)';
+      case 'token/counterparty': return 'linear-gradient(135deg, #9c27b0, #ab47bc)';
+      case 'application/bsv-20': return 'linear-gradient(135deg, #4caf50, #66bb6a)';
+      case 'application/rgb': return 'linear-gradient(135deg, #2196f3, #42a5f5)';
+      default: return 'linear-gradient(135deg, #f7931a, #ffb84d)';
+    }
+  }};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+`;
+
+const NodeContent = styled.div`
+  flex: 1;
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+const ActionButton = styled.button<{ variant: 'send' | 'receive' }>`
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: ${({ variant }) => 
+    variant === 'send' 
+      ? 'linear-gradient(135deg, #ff6b35, #ff8c42)'
+      : 'linear-gradient(135deg, #4caf50, #66bb6a)'
+  };
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const LoadingBox = styled.div<{ theme: WhiteLabelTheme['theme'] }>`
@@ -353,8 +441,81 @@ export const TokenVisualizer: React.FC<TokenVisualizerProps> = ({
     );
   }
 
-  // Visual View - Interactive UTXO/Address balls in tokenized world
+  // Visual View - Interactive UTXO/Address balls in tokenized world (3D) or mobile cards (2D)
   if (viewMode === 'visual') {
+    // Mobile version - show simplified card-based interface
+    if (!shouldUse3D()) {
+      return (
+        <VisualizerContainer theme={theme}>
+          <MobileVisualView theme={theme}>
+            <h3 style={{ marginBottom: '1rem', color: theme.color.global.contrast }}>
+              🔥 Bitcoin Assets - Mobile View
+            </h3>
+            {tokens.map((token, index) => (
+              <MobileTokenCard key={index} theme={theme}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '1rem',
+                  marginBottom: '0.5rem' 
+                }}>
+                  <div style={{
+                    width: '50px',
+                    height: '50px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #f7931a, #ffb84d)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '20px'
+                  }}>
+                    ₿
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ 
+                      margin: 0, 
+                      color: theme.color.global.contrast,
+                      fontSize: '1rem'
+                    }}>
+                      {token.metadata?.name || token.tokenId}
+                    </h4>
+                    <p style={{ 
+                      margin: '0.25rem 0', 
+                      color: theme.color.global.gray,
+                      fontSize: '0.8rem'
+                    }}>
+                      {token.address.slice(0, 16)}...
+                    </p>
+                  </div>
+                </div>
+                
+                {token.metadata?.satoshi && (
+                  <div style={{
+                    background: theme.color.global.walletBackground,
+                    padding: '0.5rem',
+                    borderRadius: '6px',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <strong style={{ color: '#f7931a' }}>
+                      {(token.metadata.satoshi / 100000000).toFixed(8)} BTC
+                    </strong>
+                  </div>
+                )}
+                
+                <ActionButtons>
+                  <ActionButton variant="send">
+                    📤 Send
+                  </ActionButton>
+                  <ActionButton variant="receive">
+                    📥 Receive
+                  </ActionButton>
+                </ActionButtons>
+              </MobileTokenCard>
+            ))}
+          </MobileVisualView>
+        </VisualizerContainer>
+      );
+    }
     // Generate UTXO data from tokens
     const generateUTXOs = () => {
       const utxos: any[] = [];
@@ -701,6 +862,95 @@ export const TokenVisualizer: React.FC<TokenVisualizerProps> = ({
   }
 
   // Network View - Interactive Bitcoin transaction network with send/receive
+  // Mobile version - show network as list
+  if (!shouldUse3D()) {
+    return (
+      <VisualizerContainer theme={theme}>
+        <MobileNetworkView theme={theme}>
+          <h3 style={{ marginBottom: '1rem', color: theme.color.global.contrast }}>
+            🌐 Bitcoin Network - Mobile View
+          </h3>
+          {tokens.map((token, index) => {
+            const getNodeColor = (contentType: string) => {
+              switch (contentType) {
+                case 'image/png': return '#ff6b35';
+                case 'token/counterparty': return '#9c27b0';
+                case 'application/bsv-20': return '#4caf50';
+                case 'application/rgb': return '#2196f3';
+                default: return '#f7931a';
+              }
+            };
+
+            const getNodeIcon = (contentType: string) => {
+              switch (contentType) {
+                case 'image/png': return '🎨';
+                case 'token/counterparty': return '🪙';
+                case 'application/bsv-20': return '💰';
+                case 'application/rgb': return '📜';
+                default: return '₿';
+              }
+            };
+
+            return (
+              <NetworkNode key={token.tokenId} theme={theme} nodeType={token.contentType}>
+                <NodeIcon nodeType={token.contentType}>
+                  {getNodeIcon(token.contentType)}
+                </NodeIcon>
+                <NodeContent>
+                  <h4 style={{ 
+                    margin: '0 0 0.5rem 0', 
+                    color: theme.color.global.contrast,
+                    fontSize: '1rem'
+                  }}>
+                    {token.metadata?.name || token.tokenId}
+                  </h4>
+                  <p style={{ 
+                    margin: '0 0 0.5rem 0', 
+                    color: theme.color.global.gray,
+                    fontSize: '0.8rem'
+                  }}>
+                    {token.address.slice(0, 12)}...{token.address.slice(-8)}
+                  </p>
+                  
+                  {token.metadata?.txid && (
+                    <p style={{ 
+                      margin: '0 0 0.5rem 0', 
+                      color: theme.color.global.gray,
+                      fontSize: '0.7rem'
+                    }}>
+                      TX: {token.metadata.txid.slice(0, 16)}...
+                    </p>
+                  )}
+                  
+                  {token.metadata?.satoshi && (
+                    <div style={{
+                      color: getNodeColor(token.contentType),
+                      fontWeight: 'bold',
+                      fontSize: '0.9rem',
+                      marginBottom: '0.5rem'
+                    }}>
+                      {(token.metadata.satoshi / 100000000).toFixed(8)} BTC
+                    </div>
+                  )}
+                  
+                  <ActionButtons>
+                    <ActionButton variant="send">
+                      📤 SEND
+                    </ActionButton>
+                    <ActionButton variant="receive">
+                      📥 RECEIVE
+                    </ActionButton>
+                  </ActionButtons>
+                </NodeContent>
+              </NetworkNode>
+            );
+          })}
+        </MobileNetworkView>
+      </VisualizerContainer>
+    );
+  }
+
+  // Desktop 3D Network View
   return (
     <VisualizerContainer theme={theme}>
       <Canvas 

@@ -1,6 +1,10 @@
 import styled from 'styled-components';
 import { WhiteLabelTheme } from '../theme.types';
 
+const HeaderWrapper = styled.div`
+  width: 100%;
+`;
+
 const HeaderContainer = styled.div<WhiteLabelTheme>`
   display: flex;
   justify-content: space-between;
@@ -11,6 +15,7 @@ const HeaderContainer = styled.div<WhiteLabelTheme>`
   height: 96px;
   position: relative;
 `;
+
 
 const CenterSection = styled.div`
   position: absolute;
@@ -83,37 +88,6 @@ const RightSection = styled.div`
   justify-content: flex-end;
 `;
 
-const StatusIndicator = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 12px;
-  background: rgba(0, 255, 136, 0.1);
-  border: 1px solid rgba(0, 255, 136, 0.3);
-  border-radius: 6px;
-  font-size: 12px;
-  color: #00ff88;
-`;
-
-const ExchangeLink = styled.a`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #000000;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(234, 179, 8, 0.4);
-  }
-`;
 
 interface AppHeaderProps {
   theme: any;
@@ -122,39 +96,33 @@ interface AppHeaderProps {
 
 export const AppHeader = ({ theme, onTitleClick }: AppHeaderProps) => {
   return (
-    <HeaderContainer theme={theme}>
-      {/* Left section - placeholder for future controls */}
-      <LeftSection>
-        {/* Could add view toggles or other controls here */}
-      </LeftSection>
-      
-      {/* Center section - Bitcoin Wallet Title */}
-      <CenterSection>
-        <BitcoinIcon>
-          ₿
-        </BitcoinIcon>
-        <TitleContainer onClick={onTitleClick}>
-          <Title>
-            <BitcoinText>Bitcoin</BitcoinText>
-            <WalletText> Wallet</WalletText>
-          </Title>
-          <Subtitle>
-            Real-World Currencies & File Type Assets
-          </Subtitle>
-        </TitleContainer>
-      </CenterSection>
+    <HeaderWrapper>
+      <HeaderContainer theme={theme}>
+        {/* Left section - placeholder for future controls */}
+        <LeftSection>
+          {/* Could add view toggles or other controls here */}
+        </LeftSection>
+        
+        {/* Center section - Bitcoin Wallet Title */}
+        <CenterSection>
+          <BitcoinIcon>
+            ₿
+          </BitcoinIcon>
+          <TitleContainer onClick={onTitleClick}>
+            <Title>
+              <BitcoinText>Bitcoin</BitcoinText>
+              <WalletText> Wallet</WalletText>
+            </Title>
+            <Subtitle>
+              Real-World Currencies & File Type Assets
+            </Subtitle>
+          </TitleContainer>
+        </CenterSection>
 
-      {/* Right section - Status and Exchange */}
-      <RightSection>
-        <ExchangeLink href="https://exchange.bitcoin-wallet.app" target="_blank" rel="noopener noreferrer">
-          <span>🏦</span>
-          <span>Exchange</span>
-        </ExchangeLink>
-        <StatusIndicator>
-          <span style={{ color: '#00ff88', fontSize: '10px' }}>●</span>
-          <span>Connected</span>
-        </StatusIndicator>
-      </RightSection>
-    </HeaderContainer>
+        {/* Right section - empty now */}
+        <RightSection>
+        </RightSection>
+      </HeaderContainer>
+    </HeaderWrapper>
   );
 };

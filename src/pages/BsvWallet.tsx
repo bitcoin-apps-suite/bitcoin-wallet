@@ -6,7 +6,10 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { PageLoader } from '../components/PageLoader';
 import { QrCode } from '../components/QrCode';
-import { Taskbar } from '../components/Taskbar';
+import { AdaptiveTaskbar } from '../components/AdaptiveTaskbar';
+import { MobileOptimizedWallet } from '../components/MobileOptimizedWallet';
+import { MobileFloatingAction } from '../components/MobileFloatingAction';
+import { isMobileDevice } from '../utils/deviceDetection';
 import { AppHeader } from '../components/AppHeader';
 import {
   ButtonContainer,
@@ -48,6 +51,7 @@ import { Bsv20TokensList } from '../components/Bsv20TokensList';
 import { FaListAlt, FaTrash } from 'react-icons/fa';
 import { FaArrowRightArrowLeft } from 'react-icons/fa6';
 import { FaHistory } from 'react-icons/fa';
+import { initializeBitcoinOS } from '../utils/bitcoinOSBridge';
 import { BubbleVisualization } from '../components/BubbleVisualization';
 import { ManageTokens } from '../components/ManageTokens';
 import { Account, ChromeStorageObject } from '../services/types/chromeStorage.types';
@@ -57,6 +61,10 @@ import { TxHistory } from '../components/TxHistory';
 import { ViewModeToggle, ViewMode } from '../components/ViewModeToggle';
 import { TokenVisualizer } from '../components/TokenVisualizer';
 import { WalletShowcaseTabs } from '../components/WalletShowcaseTabs';
+import { MobileCategoryDropdown, Category } from '../components/MobileCategoryDropdown';
+import { fileTypeTranslator } from '../services/FileTypeTranslator.service';
+import { FileAsset } from '../types/FileAsset.types';
+import { FileAssetList } from '../components/FileAssetList';
 
 const AppContainer = styled.div<WhiteLabelTheme>`
   display: flex;
@@ -69,6 +77,11 @@ const ContentContainer = styled.div<WhiteLabelTheme>`
   display: flex;
   flex: 1;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    overflow-y: auto;
+  }
 `;
 
 const WalletMainContent = styled.div<WhiteLabelTheme>`
@@ -80,6 +93,11 @@ const WalletMainContent = styled.div<WhiteLabelTheme>`
   padding: 2rem 1rem;
   overflow-y: auto;
   background-color: ${({ theme }) => theme.color.global.walletBackground};
+
+  @media (max-width: 768px) {
+    padding: 1rem 0.5rem;
+    min-height: 60vh;
+  }
 `;
 
 const Sidebar = styled.div<WhiteLabelTheme>`
@@ -88,6 +106,21 @@ const Sidebar = styled.div<WhiteLabelTheme>`
   border-right: 1px solid ${({ theme }) => theme.color.global.gray + '40'};
   padding: 2rem 1rem;
   overflow-y: auto;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const MobileDropdownWrapper = styled.div<WhiteLabelTheme>`
+  @media (max-width: 768px) {
+    padding: 0 1rem;
+    margin-top: 1rem;
+  }
+  
+  @media (min-width: 769px) {
+    display: none;
+  }
 `;
 
 const SidebarTitle = styled.h3<WhiteLabelTheme>`
@@ -251,6 +284,25 @@ export const BsvWallet = (props: BsvWalletProps) => {
   const [randomKey, setRandomKey] = useState(Math.random());
   const isTestnet = chromeStorageService?.getNetwork() === 'testnet' ? true : false;
   const [viewMode, setViewMode] = useState<ViewMode>('visual');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  
+  // File asset state
+  const [fileAssets, setFileAssets] = useState<FileAsset[]>([]);
+  const [showFileAssetView, setShowFileAssetView] = useState(false);
+
+  const categories: Category[] = [
+    { id: 'all', name: 'All Assets', icon: '🗂️', count: 892 },
+    { id: 'bitcoin', name: 'Bitcoin', icon: '₿', count: 1 },
+    { id: 'nft', name: 'NFT Art', icon: '🖼️', count: 245 },
+    { id: 'music', name: 'Music', icon: '🎵', count: 112 },
+    { id: 'gaming', name: 'Gaming', icon: '🎮', count: 89 },
+    { id: 'documents', name: 'Documents', icon: '📄', count: 267 },
+    { id: 'tokens', name: 'Tokens', icon: '🪙', count: 45 },
+    { id: 'collectibles', name: 'Collectibles', icon: '🏆', count: 78 },
+    { id: 'videos', name: 'Videos', icon: '🎬', count: 34 },
+    { id: 'ebooks', name: 'E-Books', icon: '📚', count: 19 },
+    { id: 'certificates', name: 'Certificates', icon: '🏅', count: 12 }
+  ];
 
   const [recipients, setRecipients] = useState<Recipient[]>([
     { id: crypto.randomUUID(), address: '', satSendAmount: null, usdSendAmount: null, amountType: 'bsv' },
@@ -328,6 +380,42 @@ export const BsvWallet = (props: BsvWalletProps) => {
     const filtered = bsv20s.filter((t) => t.id && account?.settings?.favoriteTokens?.includes(t.id));
     setFilteredTokens(filtered);
   }, [bsv20s, account]);
+
+  // Convert BSV20 tokens to file assets
+  useEffect(() => {
+    if (!bsv20s) return;
+    
+    const convertedFileAssets = bsv20s.map(bsv20Token => 
+      fileTypeTranslator.bsv20ToFileAsset(bsv20Token)
+    );
+    
+    setFileAssets(convertedFileAssets);
+  }, [bsv20s]);
+
+  const handleFileAssetClick = (fileAsset: FileAsset) => {
+    // For now, convert back to BSV20 format for existing send flow
+    if (fileAsset.standard === 'bsv20') {
+      setToken({
+        isConfirmed: fileAsset.confirmed,
+        info: fileAsset.underlyingToken as Bsv20
+      });
+    }
+  };
+
+  // Initialize Bitcoin OS Bridge
+  useEffect(() => {
+    initializeBitcoinOS({
+      id: 'bitcoin-wallet',
+      name: 'Bitcoin Wallet',
+      version: '4.5.0',
+      description: 'Full-featured BSV wallet with real-world currency and file type tokens',
+      icon: '/favicon.ico',
+      color: '#eab308',
+      url: window.location.origin,
+      capabilities: ['send', 'receive', 'tokens', 'files', 'mobile'],
+      mobileSupport: true
+    });
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -595,15 +683,34 @@ export const BsvWallet = (props: BsvWalletProps) => {
     </ReceiveContent>
   );
 
-  const main = (
+  const main = isMobileDevice() ? (
+    <MobileOptimizedWallet
+      theme={{ theme }}
+      bsvBalance={bsvBalance}
+      usdBalance={bsvBalance * exchangeRate}
+      address={bsvAddress}
+      assets={[]}
+    />
+  ) : (
     <AppContainer theme={theme}>
-      <Taskbar />
+      <AdaptiveTaskbar theme={{ theme }} />
       <AppHeader theme={theme} onTitleClick={() => setPageState('main')} />
       <WalletShowcaseTabs onTabChange={(tabId) => console.log('Tab changed to:', tabId)} />
+      
+      {/* Mobile Category Dropdown */}
+      <MobileDropdownWrapper theme={theme}>
+        <MobileCategoryDropdown
+          theme={theme}
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategorySelect={setSelectedCategory}
+        />
+      </MobileDropdownWrapper>
+      
       <ContentContainer theme={theme}>
-        {/* File Types Sidebar - moved to left */}
+        {/* File Assets Sidebar */}
         <Sidebar theme={theme}>
-          <SidebarTitle theme={theme}>File Type Assets</SidebarTitle>
+          <SidebarTitle theme={theme}>File Assets</SidebarTitle>
           
           {/* View Mode Toggle */}
           <ViewModeToggle
@@ -612,123 +719,59 @@ export const BsvWallet = (props: BsvWalletProps) => {
             theme={{ theme }}
           />
           
-          {/* Media Files */}
-          <AssetRow
-            balance={45}
-            icon="🖼️"
-            ticker="JPEG"
-            usdBalance={45 * 2.50}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={78}
-            icon="🖼️"
-            ticker="PNG"
-            usdBalance={78 * 4.20}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={45}
-            icon="🎨"
-            ticker="SVG"
-            usdBalance={45 * 6.50}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={23}
-            icon="🎵"
-            ticker="WAV"
-            usdBalance={23 * 15.25}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={89}
-            icon="🎶"
-            ticker="MP3"
-            usdBalance={89 * 8.75}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={12}
-            icon="🎬"
-            ticker="MOV"
-            usdBalance={12 * 125.00}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={67}
-            icon="📹"
-            ticker="MP4"
-            usdBalance={67 * 85.50}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={23}
-            icon="🎞️"
-            ticker="AVI"
-            usdBalance={23 * 95.00}
-            showPointer={true}
-          />
+          {/* Show file assets as AssetRows */}
+          {fileAssets.slice(0, 15).map(fileAsset => (
+            <AssetRow
+              key={fileAsset.id}
+              balance={fileAsset.displayAmount || 1}
+              icon={fileAsset.icon}
+              ticker={fileAsset.filename}
+              usdBalance={fileAsset.value || 0}
+              showPointer={true}
+              isFileAsset={true}
+              fileAsset={fileAsset}
+              onClick={() => handleFileAssetClick(fileAsset)}
+            />
+          ))}
           
-          {/* Document Files */}
-          <AssetRow
-            balance={156}
-            icon="📄"
-            ticker="PDF"
-            usdBalance={156 * 3.25}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={234}
-            icon="📝"
-            ticker="DOC"
-            usdBalance={234 * 1.80}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={123}
-            icon="📊"
-            ticker="XLS"
-            usdBalance={123 * 2.15}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={34}
-            icon="🔤"
-            ticker="TXT"
-            usdBalance={34 * 0.85}
-            showPointer={true}
-          />
+          {/* Add some demo file types if no real assets */}
+          {fileAssets.length === 0 && (
+            <>
+              <AssetRow
+                balance={45}
+                icon="🖼️"
+                ticker="demo-art.nft"
+                usdBalance={45 * 2.50}
+                showPointer={true}
+                isFileAsset={true}
+              />
+              <AssetRow
+                balance={100}
+                icon="🏢"
+                ticker="tesla-shares.ft"
+                usdBalance={100 * 248.50}
+                showPointer={true}
+                isFileAsset={true}
+              />
+              <AssetRow
+                balance={1}
+                icon="🎨"
+                ticker="cryptopunk-1234.nft"
+                usdBalance={15000}
+                showPointer={true}
+                isFileAsset={true}
+              />
+            </>
+          )}
           
-          {/* Code & Web Files */}
-          <AssetRow
-            balance={56}
-            icon="🌐"
-            ticker="HTML"
-            usdBalance={56 * 3.75}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={78}
-            icon="⚙️"
-            ticker="JSON"
-            usdBalance={78 * 1.25}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={89}
-            icon="💻"
-            ticker="ZIP"
-            usdBalance={89 * 12.50}
-            showPointer={true}
-          />
-          <AssetRow
-            balance={67}
-            icon="📱"
-            ticker="APP"
-            usdBalance={67 * 45.50}
-            showPointer={true}
-          />
+          {fileAssets.length > 15 && (
+            <Button
+              theme={theme}
+              type="secondary"
+              label={`View All (${fileAssets.length})`}
+              onClick={() => setShowFileAssetView(true)}
+            />
+          )}
         </Sidebar>
         
         <WalletMainContent theme={theme}>
@@ -970,6 +1013,20 @@ export const BsvWallet = (props: BsvWalletProps) => {
             setRandomKey(Math.random());
           }}
           theme={theme}
+        />
+      </Show>
+      <Show when={showFileAssetView}>
+        <FileAssetList
+          fileAssets={fileAssets}
+          theme={{ theme }}
+          onAssetClick={handleFileAssetClick}
+          title="All File Assets"
+        />
+        <Button
+          theme={theme}
+          type="secondary"
+          label="← Back to Wallet"
+          onClick={() => setShowFileAssetView(false)}
         />
       </Show>
       <Show when={isProcessing && pageState === 'main'}>

@@ -39,6 +39,14 @@ const TheInput = styled.input<{ theme: Theme; $shake?: string }>`
         `
       : 'none'};
 
+  @media (max-width: 768px) {
+    width: 90%;
+    height: 2.5rem;
+    font-size: 1rem;
+    margin: 0.5rem 0.25rem;
+    touch-action: manipulation;
+  }
+
   &[type='number']::-webkit-inner-spin-button,
   &[type='number']::-webkit-outer-spin-button {
     -webkit-appearance: none;

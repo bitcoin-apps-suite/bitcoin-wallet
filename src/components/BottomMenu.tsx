@@ -18,6 +18,12 @@ const Container = styled.div<WhiteLabelTheme>`
   background: ${({ theme }) => theme.color.component.bottomMenuBackground};
   color: ${({ theme }) => theme.color.component.bottomMenuText + '80'};
   z-index: 100;
+
+  @media (max-width: 768px) {
+    height: 4rem;
+    padding: 0.5rem 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const MenuContainer = styled.div<WhiteLabelTheme>`
@@ -30,6 +36,11 @@ const MenuContainer = styled.div<WhiteLabelTheme>`
   bottom: 0;
   z-index: 100;
   position: relative;
+
+  @media (max-width: 768px) {
+    height: 4rem;
+    min-width: 3.5rem;
+  }
 `;
 
 const ContentWrapper = styled.div`

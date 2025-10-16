@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import styled from 'styled-components';
 import { WhiteLabelTheme } from '../theme.types';
 import { formatUSD } from '../utils/format';
+import { shouldUse3D } from '../utils/deviceDetection';
 
 const Container = styled.div<WhiteLabelTheme>`
   width: 100%;
@@ -29,6 +30,67 @@ const InfoText = styled.div<WhiteLabelTheme>`
   color: ${({ theme }) => theme.color.global.contrast};
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
+`;
+
+const MobileBubbleView = styled.div<WhiteLabelTheme>`
+  padding: 1rem;
+  height: 100%;
+  overflow-y: auto;
+`;
+
+const MobileBubbleCard = styled.div<WhiteLabelTheme>`
+  background: ${({ theme }) => theme.color.global.row};
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #fbbf24;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const BubbleIcon = styled.div<{ size: number }>`
+  width: ${({ size }) => size * 40}px;
+  height: ${({ size }) => size * 40}px;
+  min-width: 40px;
+  min-height: 40px;
+  max-width: 80px;
+  max-height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fde047, #f59e0b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+`;
+
+const BubbleContent = styled.div`
+  flex: 1;
+`;
+
+const BubbleActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+const BubbleActionButton = styled.button<{ variant: 'send' | 'receive' | 'combine' }>`
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: ${({ variant }) => {
+    switch (variant) {
+      case 'send': return 'linear-gradient(135deg, #fde047, #f59e0b)';
+      case 'receive': return 'linear-gradient(135deg, #fde047, #f59e0b)';
+      case 'combine': return 'linear-gradient(135deg, #8b5cf6, #6366f1)';
+    }
+  }};
+  color: ${({ variant }) => variant === 'combine' ? '#fff' : '#000'};
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 interface BubbleData {
@@ -214,6 +276,8 @@ export const BubbleVisualization: React.FC<BubbleVisualizationProps> = ({
   onReceive,
   onCombine
 }) => {
+  // Check if we should use 3D view
+  const use3D = shouldUse3D();
   // Generate bubble data from UTXOs
   const bubbleData: BubbleData[] = useMemo(() => {
     // Mock data for demonstration - replace with real UTXO data
@@ -259,6 +323,96 @@ export const BubbleVisualization: React.FC<BubbleVisualizationProps> = ({
     onCombine(combineCandidates);
   };
 
+  // Mobile version - simplified list view
+  if (!use3D) {
+    return (
+      <Container theme={theme}>
+        <MobileBubbleView theme={theme}>
+          <h3 style={{ 
+            marginBottom: '1rem', 
+            color: theme.theme.color.global.contrast,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            💰 UTXO Bubbles - Mobile View
+          </h3>
+          {bubbleData.map(bubble => {
+            const size = Math.cbrt(bubble.usdValue / 100) + 0.8; // Size calculation for mobile
+            return (
+              <MobileBubbleCard key={bubble.id} theme={theme}>
+                <BubbleIcon size={size}>
+                  💰
+                </BubbleIcon>
+                <BubbleContent>
+                  <h4 style={{ 
+                    margin: '0 0 0.5rem 0', 
+                    color: theme.theme.color.global.contrast,
+                    fontSize: '1rem'
+                  }}>
+                    {(bubble.amount / 100000000).toFixed(4)} BSV
+                  </h4>
+                  <p style={{ 
+                    margin: '0 0 0.5rem 0', 
+                    color: theme.theme.color.global.gray,
+                    fontSize: '0.8rem'
+                  }}>
+                    {bubble.address.slice(0, 8)}...{bubble.address.slice(-6)}
+                  </p>
+                  <div style={{
+                    fontWeight: 'bold',
+                    color: '#fbbf24',
+                    fontSize: '0.9rem',
+                    marginBottom: '0.5rem'
+                  }}>
+                    {formatUSD(bubble.usdValue)}
+                  </div>
+                  <BubbleActions>
+                    <BubbleActionButton 
+                      variant="send"
+                      onClick={() => onSend(bubble.id)}
+                    >
+                      Send
+                    </BubbleActionButton>
+                    <BubbleActionButton 
+                      variant="receive"
+                      onClick={() => onReceive(bubble.id)}
+                    >
+                      Receive
+                    </BubbleActionButton>
+                    <BubbleActionButton 
+                      variant="combine"
+                      onClick={() => handleCombine(bubble.id)}
+                    >
+                      Combine
+                    </BubbleActionButton>
+                  </BubbleActions>
+                </BubbleContent>
+              </MobileBubbleCard>
+            );
+          })}
+          
+          {/* Summary at bottom */}
+          <div style={{
+            background: theme.theme.color.global.row,
+            borderRadius: '12px',
+            padding: '1rem',
+            marginTop: '1rem',
+            textAlign: 'center'
+          }}>
+            <InfoText theme={theme}>
+              <strong>Total Balance:</strong> {(balance / 100000000).toFixed(8)} BSV
+            </InfoText>
+            <InfoText theme={theme}>
+              <strong>USD Value:</strong> {formatUSD(balance / 100000000 * exchangeRate)}
+            </InfoText>
+          </div>
+        </MobileBubbleView>
+      </Container>
+    );
+  }
+
+  // Desktop 3D version
   return (
     <Container theme={theme}>
       <Canvas

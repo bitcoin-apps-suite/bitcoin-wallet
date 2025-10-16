@@ -38,6 +38,14 @@ const Primary = styled.button<WhiteLabelTheme>`
   &:hover {
     transform: scale(1.02);
   }
+
+  @media (max-width: 768px) {
+    width: 90%;
+    height: 2.75rem;
+    font-size: 0.9rem;
+    margin: 0.75rem 0.5rem;
+    touch-action: manipulation;
+  }
 `;
 
 const GradientBorderWrapper = styled.div<WhiteLabelTheme>`
