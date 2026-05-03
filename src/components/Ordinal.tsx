@@ -3,6 +3,7 @@ import { Ordinal as OrdinalType } from 'yours-wallet-provider';
 import { WhiteLabelTheme, Theme } from '../theme.types';
 import { Text } from './Reusable';
 import { Show } from './Show';
+import { MagazineViewer, isMagazineManifest } from './MagazineViewer';
 
 export type OrdinalDivProps = WhiteLabelTheme & {
   url?: string;
@@ -145,12 +146,24 @@ export const Ordinal = (props: OrdinalProps) => {
             <OrdText theme={theme}>{inscription.origin?.data?.insc?.file?.text}</OrdText>
           </TextWrapper>
         );
-      case contentType?.startsWith('application/json'):
+      case contentType?.startsWith('application/json'): {
+        // Detect manifest+N magazine inscriptions and render the page-turn viewer
+        // instead of raw JSON. Same MagazineManifest schema used by NPGX Mint,
+        // bCorp Mint, and the npgx web $9.99 Stripe path.
+        const json = inscription.origin?.data?.insc?.file?.json;
+        if (isMagazineManifest(json)) {
+          return (
+            <JsonWrapper size={size} selected={selected} url={url} theme={theme} onClick={onClick}>
+              <MagazineViewer manifest={json} manifestTxid={inscription.origin?.outpoint?.split('_')?.[0]} />
+            </JsonWrapper>
+          );
+        }
         return (
           <JsonWrapper size={size} selected={selected} url={url} theme={theme} onClick={onClick}>
-            <Json theme={theme}>{JSON.stringify(inscription.origin?.data?.insc?.file?.json, null, 2)}</Json>
+            <Json theme={theme}>{JSON.stringify(json, null, 2)}</Json>
           </JsonWrapper>
         );
+      }
       default:
         return (
           <TextWrapper size={size} selected={selected} theme={theme} onClick={onClick}>
