@@ -12,6 +12,7 @@ import { NetWork } from 'yours-wallet-provider';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { PocBar } from './components/PocBar';
 import { HandCashCallback } from './components/HandCashCallback';
+import { TokensPanel } from './components/TokensPanel';
 import { useEffect } from 'react';
 
 const AppContainer = styled.div<WhiteLabelTheme & { $hasBar: boolean }>`
@@ -50,6 +51,7 @@ export const App = () => {
                 <SnackbarProvider>
                   <Routes>
                     <Route path="/handcash-callback" element={<HandCashCallback />} />
+                    <Route path="/tokens" element={<TokensPanel />} />
                     <Route path="*" element={<BsvWallet isOrdRequest={false} />} />
                   </Routes>
                 </SnackbarProvider>

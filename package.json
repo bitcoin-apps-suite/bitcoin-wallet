@@ -4,6 +4,8 @@
   "description": "Bitcoin Wallet - A full-featured Bitcoin BSV wallet with real-world currencies and file type assets",
   "private": true,
   "dependencies": {
+    "@bsv/btms": "^1.0.1",
+    "@bsv/message-box-client": "^2.1.1",
     "@bsv/paymail": "^2.0.2",
     "@bsv/sdk": "^1.4.24",
     "@fortawesome/react-fontawesome": "^0.2.2",
