@@ -8,6 +8,7 @@
     "@bsv/message-box-client": "^2.1.1",
     "@bsv/paymail": "^2.0.2",
     "@bsv/sdk": "^1.4.24",
+    "@bsv/wallet-toolbox-client": "^2.1.24",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@handcash/handcash-connect": "^0.8.11",
     "@ramonak/react-progress-bar": "^5.2.0",

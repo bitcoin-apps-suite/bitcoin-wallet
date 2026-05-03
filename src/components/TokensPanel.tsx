@@ -15,6 +15,11 @@ import {
   btmsAccept,
   btmsSend,
   btmsBurn,
+  setBindingMode,
+  setRemoteUrl,
+  generateNativeKey,
+  importNativeKey,
+  clearNativeKey,
   type BTMSAsset,
   type IncomingToken,
   type BtmsStatus,
@@ -141,22 +146,8 @@ export function TokensPanel() {
         </button>
       </header>
 
-      {/* Wallet binding state */}
-      {!status?.walletReady && (
-        <div style={warnBoxStyle}>
-          <div style={{ fontWeight: 700 }}>BRC-100 wallet not connected</div>
-          <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>
-            BTMS needs a BRC-100 wallet daemon at <code>{status?.walletUrl ?? 'http://127.0.0.1:3321'}</code>.
-            Easiest: run MetaNet Desktop and unlock it. Native binding (using bitcoin-wallet's own
-            keys) is on the roadmap.
-          </div>
-          {status?.reason && (
-            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 6, fontFamily: 'monospace' }}>
-              {status.reason}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Binding mode + settings */}
+      <BindingModeBox status={status} onChange={refresh} />
 
       {error && <div style={errBoxStyle}>{error}</div>}
       {actionMsg && <div style={infoBoxStyle}>{actionMsg}</div>}
@@ -353,3 +344,174 @@ const burnBtnStyle: React.CSSProperties = {
 };
 
 export default TokensPanel;
+
+// ─── Binding-mode settings sub-panel ───────────────────────────────────
+
+function BindingModeBox({
+  status,
+  onChange,
+}: {
+  status: BtmsStatus | null;
+  onChange: () => void;
+}) {
+  const [showSettings, setShowSettings] = useState(false);
+  const [remoteUrlDraft, setRemoteUrlDraft] = useState(status?.walletUrl ?? 'http://127.0.0.1:3321');
+  const [importHex, setImportHex] = useState('');
+  const [keyMsg, setKeyMsg] = useState<string | null>(null);
+
+  if (!status) return null;
+
+  const onModeToggle = (m: 'remote' | 'native') => {
+    setBindingMode(m);
+    onChange();
+  };
+  const onSaveRemote = () => {
+    setRemoteUrl(remoteUrlDraft.trim());
+    onChange();
+  };
+  const onGen = () => {
+    const { identityAddress } = generateNativeKey();
+    setKeyMsg(`Generated. Identity address: ${identityAddress}. Backup the key in settings.`);
+    onChange();
+    setTimeout(() => setKeyMsg(null), 8000);
+  };
+  const onImport = () => {
+    if (!importHex.trim()) return;
+    try {
+      const { identityAddress } = importNativeKey(importHex);
+      setKeyMsg(`Imported. Identity address: ${identityAddress}.`);
+      setImportHex('');
+      onChange();
+    } catch (err) {
+      setKeyMsg(`Import failed: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setTimeout(() => setKeyMsg(null), 8000);
+    }
+  };
+  const onClearKey = () => {
+    if (!window.confirm('Clear native root key? Data stored under it will be inaccessible without a backup.')) return;
+    clearNativeKey();
+    onChange();
+  };
+
+  return (
+    <div
+      style={{
+        background: status.walletReady ? 'rgba(80, 200, 120, 0.06)' : 'rgba(255, 200, 50, 0.08)',
+        border: `1px solid ${status.walletReady ? 'rgba(80, 200, 120, 0.3)' : 'rgba(255, 200, 50, 0.3)'}`,
+        borderRadius: 6,
+        padding: 12,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: 13 }}>
+            BRC-100 wallet · {status.bindingMode === 'native' ? 'Native (in-browser)' : 'Remote (BRC-100 daemon)'}
+          </div>
+          <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2 }}>
+            {status.walletReady
+              ? `Ready · identity ${status.identityKey?.slice(0, 16)}…`
+              : status.reason ?? 'Not connected'}
+          </div>
+        </div>
+        <button onClick={() => setShowSettings((v) => !v)} style={tinyBtnStyle}>
+          {showSettings ? 'Hide' : 'Settings'}
+        </button>
+      </div>
+
+      {showSettings && (
+        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* Mode toggle */}
+          <div style={{ display: 'flex', gap: 4 }}>
+            {(['remote', 'native'] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => onModeToggle(m)}
+                style={{
+                  ...tinyBtnStyle,
+                  flex: 1,
+                  background: status.bindingMode === m ? '#3a7afe' : 'rgba(255,255,255,0.05)',
+                }}
+              >
+                {m === 'remote' ? 'Remote (MetaNet Desktop)' : 'Native (in-browser, IndexedDB)'}
+              </button>
+            ))}
+          </div>
+
+          {status.bindingMode === 'remote' ? (
+            <div style={{ display: 'flex', gap: 4 }}>
+              <input
+                value={remoteUrlDraft}
+                onChange={(e) => setRemoteUrlDraft(e.target.value)}
+                placeholder="http://127.0.0.1:3321"
+                style={{
+                  flex: 1,
+                  background: 'rgba(0,0,0,0.4)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 4,
+                  color: '#fff',
+                  padding: '5px 8px',
+                  fontSize: 11,
+                  fontFamily: 'monospace',
+                }}
+              />
+              <button onClick={onSaveRemote} style={tinyBtnStyle}>Save</button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ fontSize: 10, opacity: 0.7 }}>
+                Native mode runs the BRC-100 wallet entirely in this browser tab via
+                IndexedDB. No external daemon needed. Generate a new root key (random)
+                or import an existing one (hex or WIF).
+              </div>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <button onClick={onGen} style={{ ...tinyBtnStyle, flex: 1, background: '#3a7afe' }}>
+                  Generate new key
+                </button>
+                {status.hasNativeKey && (
+                  <button onClick={onClearKey} style={{ ...tinyBtnStyle, color: '#ff9a9a', borderColor: 'rgba(255,100,100,0.4)' }}>
+                    Clear key
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <input
+                  value={importHex}
+                  onChange={(e) => setImportHex(e.target.value)}
+                  placeholder="Import hex or WIF…"
+                  style={{
+                    flex: 1,
+                    background: 'rgba(0,0,0,0.4)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 4,
+                    color: '#fff',
+                    padding: '5px 8px',
+                    fontSize: 11,
+                    fontFamily: 'monospace',
+                  }}
+                />
+                <button onClick={onImport} disabled={!importHex.trim()} style={tinyBtnStyle}>Import</button>
+              </div>
+              {keyMsg && (
+                <div style={{ fontSize: 11, color: keyMsg.startsWith('Import failed') ? '#ffaaaa' : '#aaccff', wordBreak: 'break-all' }}>
+                  {keyMsg}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const tinyBtnStyle: React.CSSProperties = {
+  background: 'rgba(255, 255, 255, 0.05)',
+  border: '1px solid rgba(255, 255, 255, 0.12)',
+  color: '#fff',
+  padding: '4px 10px',
+  borderRadius: 4,
+  fontSize: 11,
+  cursor: 'pointer',
+  fontWeight: 600,
+};
